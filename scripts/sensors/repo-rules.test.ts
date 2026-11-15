@@ -1,12 +1,12 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   checkDependencies,
   checkDependenciesInFile,
+  APP_NAMES,
   filterJsFiles,
   findAppNames,
-  findAppNamesInFile,
   findJsFiles,
   findSelfImports,
   findSelfImportsInText,
@@ -115,8 +115,25 @@ describe("R-FND-10.14 no self-imports", () => {
 });
 
 describe("R-FND-10.15 / R-FND-08.2 no app names in the scenario schema", () => {
-  it("real core/model/scenario-schema.ts contains no app name", () => {
-    expect(findAppNamesInFile(join(root, "core", "model", "scenario-schema.ts"))).toEqual([]);
+  it("every file under core/model/ has no app name in its path or content (R-GRAPH-10.2)", () => {
+    const appFolders = readdirSync(join(root, "apps"), { withFileTypes: true })
+      .filter((e) => e.isDirectory())
+      .map((e) => e.name);
+    const names = [...new Set([...APP_NAMES, ...appFolders])];
+    const dir = join(root, "core", "model");
+    const files = listFiles(dir);
+    expect(files.length).toBeGreaterThan(0);
+    const hits: string[] = [];
+    for (const file of files) {
+      const haystack = `${file}\n${readFileSync(join(dir, file), "utf8")}`.toLowerCase();
+      for (const name of names) {
+        if (haystack.includes(name.toLowerCase())) hits.push(`${file}: ${name}`);
+      }
+      for (const name of findAppNames(haystack)) {
+        if (!hits.includes(`${file}: ${name}`)) hits.push(`${file}: ${name}`);
+      }
+    }
+    expect(hits).toEqual([]);
   });
   it("findAppNames is case-insensitive and reports names", () => {
     expect(findAppNames("// Robot helper in the Mansion")).toEqual(["robot", "mansion"]);

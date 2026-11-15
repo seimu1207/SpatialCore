@@ -23,14 +23,11 @@ function findScenarioFiles(): string[] {
 function checkFile(file: string, label: string): boolean {
   const result = checkScenarioText(readFileSync(file, "utf8"));
   if (result.ok) return true;
-  if (result.kind === "parse") {
-    console.error(`${label}: JSON could not be parsed: ${result.message}`);
-  } else {
-    for (const issue of result.issues) console.error(`${label}: ${issue.path}: ${issue.message}`);
+  for (const error of result.errors) {
+    console.error(`${label}: ${error.path === "" ? "(root)" : error.path}: ${error.message}`);
   }
   return false;
 }
-
 function main(): number {
   const args = process.argv.slice(2);
   if (args.length > 1) {

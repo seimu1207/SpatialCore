@@ -56,3 +56,10 @@
 2026-11-14 | repo-foundation 11.2 | Manual hook triggers waived by the human; not observed. In the creating session the three new hooks did not fire (they activate on next session start); only the dispatcher run for each kind (schema, code) was checked, exit 0. test-on-task-done (PostTaskExec) was never fired | human decision; R-FND-09.2 to 9.5
 2026-11-14 | repo-foundation 15 (partial) | Human reported the Public_URL opens normally after push 5ebb6ac. Not yet checked: Actions step names, page content (3.1/11.4), failed-run check (11.3), MIT in About. Gate not approved | human report
 2026-11-14 | repo-foundation 15 | Verification gate approved by the human on the Public_URL: Actions green with step names visible, top page shows Haunted Graph Kit with one link each to Ghost Mansion and Moodwalk, failed-run check done, MIT shown in About | R-FND-3.1, 11.1-11.4, 12.2
+2026-11-15 | 10.6 | core spec split into core-graph / core-rules / core-view; edit commands + undo/redo in core-graph, Timeline in core-rules | keep each spec small for one developer and keep model/view separated
+2026-11-15 | 3.1 | AIAdapter belongs to core-rules (interface plus a no-AI implementation) | its input is judgement results, and tech.md says rules decide and AI only explains
+- 2026-11-15 | core-graph | requirements.md approved | human approval
+- 2026-11-15 | core-graph | design.md approved | human approval
+- 2026-11-15 | core-graph | tasks.md approved | human approval
+2026-11-15 | repo-foundation R-FND-10.15 | test extended to every file under core/model/ | R-GRAPH-10.2
+2026-11-15 | core-graph (Unit core, part 1) | Verification gate: npm test (391), typecheck, lint, check:sections, check:schema, build, check:build all exit 0; reviewer READY; human approved | R-GRAPH-01 to 12, P-GRAPH-1 to 14. Public URL check is deferred to the end of the whole core Unit

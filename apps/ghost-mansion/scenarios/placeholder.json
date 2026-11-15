@@ -1,1 +1,11 @@
-{ "schemaVersion": 1, "id": "placeholder", "title": { "en": "Placeholder scenario", "ja": "仮のシナリオ" } }
+{
+  "edges": [],
+  "id": "placeholder",
+  "nodes": [],
+  "schemaVersion": 1,
+  "title": {
+    "en": "Placeholder scenario",
+    "ja": "仮のシナリオ"
+  },
+  "zones": []
+}

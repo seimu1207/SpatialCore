@@ -1,9 +1,11 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { makeTmpProject, repoRoot, runSensor, type TmpProject } from "./tmp-project.ts";
 
 const CLI = "schema.cli.ts";
-const GOOD = JSON.stringify({ schemaVersion: 1, id: "x", title: { en: "X" } });
-const BAD_SCHEMA = JSON.stringify({ schemaVersion: 1, id: "x", title: {} });
+const GOOD = JSON.stringify({ schemaVersion: 1, id: "x", title: { en: "X" }, nodes: [], edges: [], zones: [] });
+const BAD_SCHEMA = JSON.stringify({ schemaVersion: 1, id: "x", title: {}, nodes: [], edges: [], zones: [] });
 const BAD_JSON = "{ not json";
 
 let project: TmpProject | undefined;
@@ -34,7 +36,7 @@ describe("schema CLI", { timeout: 60_000 }, () => {
     const p = make({ "apps/a/scenarios/s.json": BAD_JSON });
     const r = runSensor(CLI, p.dir, ["apps/a/scenarios/s.json"]);
     expect(r.status).toBe(1);
-    expect(r.stderr).toContain("apps/a/scenarios/s.json: JSON could not be parsed");
+    expect(r.stderr).toContain("apps/a/scenarios/s.json: (root): JSON could not be parsed");
   });
 
   it("schema failure: exit 1, prints file path and field path (08.7)", () => {
@@ -44,6 +46,37 @@ describe("schema CLI", { timeout: 60_000 }, () => {
     expect(r.stderr).toContain("apps/a/scenarios/s.json: title.en:");
   });
 
+  it("non-object top level: a (root) line, exit 1 (09.4)", () => {
+    const p = make({ "apps/a/scenarios/s.json": "[]" });
+    const r = runSensor(CLI, p.dir, ["apps/a/scenarios/s.json"]);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("apps/a/scenarios/s.json: (root): a JSON object is expected at the top level");
+  });
+  it("nested error: path in the line, file left unchanged (09.4)", () => {
+    const bad = JSON.stringify({
+      schemaVersion: 1,
+      id: "x",
+      title: { en: "X" },
+      zones: [],
+      edges: [],
+      nodes: [
+        {
+          id: "n",
+          position: { x: 0, y: 0, z: 0 },
+          rotation: { x: 0, y: 0, z: 0 },
+          scale: { x: 1, y: 1, z: 1 },
+          front: { text: { en: "T" } },
+          metadata: {},
+          attributes: {},
+        },
+      ],
+    });
+    const p = make({ "apps/a/scenarios/s.json": bad });
+    const r = runSensor(CLI, p.dir, ["apps/a/scenarios/s.json"]);
+    expect(r.status).toBe(1);
+    expect(r.stderr).toContain("apps/a/scenarios/s.json: nodes.0.type:");
+    expect(readFileSync(join(p.dir, "apps/a/scenarios/s.json"), "utf8")).toBe(bad);
+  });
   it("valid single file: exit 0 even if another file is invalid (08.5, 08.8)", () => {
     const p = make({ "apps/a/scenarios/ok.json": GOOD, "apps/a/scenarios/bad.json": BAD_JSON });
     const r = runSensor(CLI, p.dir, ["apps/a/scenarios/ok.json"]);
@@ -89,7 +122,7 @@ describe("schema CLI", { timeout: 60_000 }, () => {
     });
     const r = runSensor(CLI, p.dir);
     expect(r.status).toBe(1);
-    expect(r.stderr).toContain("apps/a/scenarios/bad1.json: JSON could not be parsed");
+    expect(r.stderr).toContain("apps/a/scenarios/bad1.json: (root): JSON could not be parsed");
     expect(r.stderr).toContain("apps/b/scenarios/bad2.json: title.en:");
     expect(r.stderr).not.toContain("good.json");
   });

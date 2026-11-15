@@ -1,5 +1,7 @@
 import fc from "fast-check";
 import { describe, expect, test } from "vitest";
+import { scenarioArb } from "../../core/model/arbitraries.ts";
+import { loadScenario, saveScenario } from "../../core/model/scenario-io.ts";
 import { checkScenarioText } from "./schema.ts";
 
 const nonBlankString = fc.string().filter((s) => s.trim().length >= 1);
@@ -9,12 +11,15 @@ const validScenario = fc.record(
     schemaVersion: fc.integer({ min: 1 }),
     id: nonBlankString,
     title: fc.record({ en: nonBlankString, ja: fc.string() }, { requiredKeys: ["en"] }),
+    nodes: fc.constant([]),
+    edges: fc.constant([]),
+    zones: fc.constant([]),
   },
-  { requiredKeys: ["schemaVersion", "id", "title"] },
+  { requiredKeys: ["schemaVersion", "id", "title", "nodes", "edges", "zones"] },
 );
 
 const extraFields = fc.dictionary(
-  fc.string().filter((k) => !["schemaVersion", "id", "title", "__proto__"].includes(k)),
+  fc.string().filter((k) => !["schemaVersion", "id", "title", "nodes", "edges", "zones", "__proto__"].includes(k)),
   fc.jsonValue(),
   { minKeys: 1 },
 );
@@ -72,8 +77,8 @@ describe("schema sensor properties", () => {
       fc.property(brokenCase, ([s, p, change]) => {
         const result = checkScenarioText(JSON.stringify(applyChange(s, p, change)));
         expect(result.ok).toBe(false);
-        if (result.ok || result.kind !== "schema") throw new Error("expected schema failure");
-        expect(result.issues.some((i) => i.path === p)).toBe(true);
+        if (result.ok) throw new Error("expected schema failure");
+        expect(result.errors.some((i) => i.path === p)).toBe(true);
       }),
       { numRuns: 100 },
     );
@@ -81,13 +86,13 @@ describe("schema sensor properties", () => {
 });
 
 describe("schema sensor examples", () => {
-  const base = { schemaVersion: 1, id: "x", title: { en: "T" } };
+  const base = { schemaVersion: 1, id: "x", title: { en: "T" }, nodes: [], edges: [], zones: [] };
 
   function paths(value: unknown): string[] {
     const r = checkScenarioText(JSON.stringify(value));
     expect(r.ok).toBe(false);
-    if (r.ok || r.kind !== "schema") throw new Error("expected schema failure");
-    return r.issues.map((i) => i.path);
+    if (r.ok) throw new Error("expected schema failure");
+    return r.errors.map((i) => i.path);
   }
 
   test("whitespace-only id fails at id", () => {
@@ -105,10 +110,49 @@ describe("schema sensor examples", () => {
   test("non-string ja fails at title.ja", () => {
     expect(paths({ ...base, title: { en: "T", ja: 3 } })).toContain("title.ja");
   });
-  test("invalid JSON text gives kind parse", () => {
+  test.each(["nodes", "edges", "zones"])("missing %s list fails at %s", (key) => {
+    const rest: Record<string, unknown> = { ...base };
+    delete rest[key];
+    expect(paths(rest)).toContain(key);
+  });
+  test("invalid JSON text gives one root error", () => {
     const r = checkScenarioText("{ not json");
     expect(r.ok).toBe(false);
     if (r.ok) return;
-    expect(r.kind).toBe("parse");
+    expect(r.errors).toHaveLength(1);
+    expect(r.errors[0]?.path).toBe("");
+    expect(r.errors[0]?.message).toContain("JSON could not be parsed");
   });
+});
+
+// Feature: core-graph, Property 2: P-GRAPH-2 saved text passes the sensor check
+// **Validates: Requirements 8.7, 9.3**
+test("P-GRAPH-2 sensor check and loader agree on saved and broken texts", () => {
+  const texts = scenarioArb.chain((s) => {
+    const saved = saveScenario(s);
+    const text = saved.ok ? saved.text : "";
+    return fc.constantFrom(
+      text,
+      text.slice(0, Math.floor(text.length / 2)),
+      text.replace('"nodes"', '"nodez"'),
+      text.replace('"zones": []', '"zones": 5'),
+      text.replace(/"id": "/, '"id": " '),
+    );
+  });
+  fc.assert(
+    fc.property(texts, (t) => {
+      const sensor = checkScenarioText(t);
+      const loaded = loadScenario(t);
+      expect(sensor.ok).toBe(loaded.ok);
+      if (!sensor.ok && !loaded.ok) expect(sensor.errors).toEqual(loaded.errors);
+    }),
+    { numRuns: 100 },
+  );
+  fc.assert(
+    fc.property(scenarioArb, (s) => {
+      const saved = saveScenario(s);
+      expect(saved.ok && checkScenarioText(saved.text).ok).toBe(true);
+    }),
+    { numRuns: 100 },
+  );
 });
