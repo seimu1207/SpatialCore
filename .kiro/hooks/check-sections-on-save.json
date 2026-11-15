@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check required sections on spec save",
+      "trigger": "PostFileSave",
+      "description": "Runs the required-sections sensor on the saved spec document.",
+      "matcher": "\\.kiro[\\\\/]specs[\\\\/][^\\\\/]+[\\\\/](requirements|design)\\.md$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/sensors/hook-dispatch.ts sections"
+      }
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "name": "spatial-core",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "engines": {
+    "node": "26.13.0"
+  },
+  "scripts": {
+    "build": "vite build",
+    "test": "vitest run",
+    "typecheck": "node scripts/sensors/typecheck.ts",
+    "lint": "node scripts/sensors/lint.ts",
+    "check:sections": "node scripts/sensors/required-sections.cli.ts",
+    "check:schema": "node scripts/sensors/schema.cli.ts",
+    "check:build": "node scripts/sensors/build-output.cli.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "26.6.6",
+    "eslint": "10.15.0",
+    "fast-check": "4.10.2",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.72.2",
+    "vite": "8.3.8",
+    "vitest": "4.1.12",
+    "zod": "4.6.7"
+  }
+}

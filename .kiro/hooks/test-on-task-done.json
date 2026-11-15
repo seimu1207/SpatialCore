@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Run tests on task done",
+      "trigger": "PostTaskExec",
+      "action": {
+        "type": "command",
+        "command": "node scripts/sensors/hook-dispatch.ts test",
+        "timeout": 180
+      }
+    }
+  ]
+}

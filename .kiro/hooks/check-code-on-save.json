@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "Check code on save",
+      "trigger": "PostFileSave",
+      "matcher": "(^|[\\\\/])(core|apps|scripts)[\\\\/].*\\.tsx?$",
+      "action": {
+        "type": "command",
+        "command": "node scripts/sensors/hook-dispatch.ts code",
+        "timeout": 180
+      }
+    }
+  ]
+}

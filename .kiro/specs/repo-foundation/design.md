@@ -1,7 +1,7 @@
 # Design Document: repo-foundation
 
 ## Overview
-
+　
 This design sets up the repository so that every later spec has a fixed place, fixed checks, and a public URL. It covers: the folder layout, one root Vite project that writes three static pages, four sensors in `scripts/sensors/`, four Kiro hooks, the GitHub Pages workflow, and the README and LICENSE.
 
 Completion criterion: after one push to `main`, the Top_Page, Ghost_Mansion_App, and Moodwalk_App open at the Public_URL ("submittable state ①").
@@ -55,15 +55,15 @@ index.html  package.json  package-lock.json  tsconfig.json  vite.config.ts  esli
 
 ```ts
 export const PUBLIC_ORIGIN = "https://seimu1207.github.io";
-export const BASE_PATH = "/haunted-graph-kit/";
+export const BASE_PATH = "/SpatialCore/";
 ```
 
 - `base: BASE_PATH`, `appType: "mpa"`, `build.outDir: "dist"`, and the build input = the three HTML files (R-FND-02.4).
 - Vite version: `package.json` pins the exact Vite version (and so its major) at implementation time. The input key depends on that major: `build.rollupOptions.input` for a Rollup-based major, `build.rolldownOptions.input` for a Rolldown-based major. **(confirm in first task)** The first task records the pinned major and the chosen key in `docs/decision-log.md`.
-- Output paths: with the repo root as Vite `root`, Vite writes `dist/apps/<app>/index.html`. A small plugin `flattenAppPages` defined inside `vite.config.ts` (no new dependency) has `apply: "build"` and `enforce: "post"`. Its `closeBundle(error)` hook moves `dist/apps/<app>/index.html` to `dist/<app>/index.html` with `fs.mkdir` + `fs.rename` for both apps, then removes the empty `dist/apps/` with `fs.rmdir` (which fails if the folder is not empty, so no stray output is deleted silently). This is the primary and only method. Because `base` is absolute, every asset reference in the HTML already starts with `/haunted-graph-kit/assets/…`, so moving the HTML file does not break it. `check:build` fails if `dist/apps` still exists or a page is missing.
+- Output paths: with the repo root as Vite `root`, Vite writes `dist/apps/<app>/index.html`. A small plugin `flattenAppPages` defined inside `vite.config.ts` (no new dependency) has `apply: "build"` and `enforce: "post"`. Its `closeBundle(error)` hook moves `dist/apps/<app>/index.html` to `dist/<app>/index.html` with `fs.mkdir` + `fs.rename` for both apps, then removes the empty `dist/apps/` with `fs.rmdir` (which fails if the folder is not empty, so no stray output is deleted silently). This is the primary and only method. Because `base` is absolute, every asset reference in the HTML already starts with `/SpatialCore/assets/…`, so moving the HTML file does not break it. `check:build` fails if `dist/apps` still exists or a page is missing.
   - **Failed build (R-FND-02.6).** `closeBundle` takes the error argument. If `error` is set, or a source file `dist/apps/<app>/index.html` does not exist, the hook returns without doing anything. It never throws its own error in that case, so the original compile error, with its file name, is the one Vite prints. The existence check also covers a bundler version that does not pass the error argument.
   - **(confirm in first task)** Put a syntax error in a real file of the repo (for example `apps/moodwalk/main.ts`) once, run `npm run build`, and check that the error output names that file and that no `flattenAppPages` error appears. Then remove the syntax error. Nothing is committed.
-- Dev server: no rewrite (YAGNI). In `vite` dev the app pages are at `/haunted-graph-kit/apps/<app>/`. The Top_Page links are `${BASE_URL}ghost-mansion/` and `${BASE_URL}moodwalk/`, relative to `base`, which are correct in the built Site and on the Public_URL. In dev those two links do not resolve; a developer opens `/haunted-graph-kit/apps/<app>/` directly. This difference is accepted. The back link on each app page (`${BASE_URL}`) works in both.
+- Dev server: no rewrite (YAGNI). In `vite` dev the app pages are at `/SpatialCore/apps/<app>/`. The Top_Page links are `${BASE_URL}ghost-mansion/` and `${BASE_URL}moodwalk/`, relative to `base`, which are correct in the built Site and on the Public_URL. In dev those two links do not resolve; a developer opens `/SpatialCore/apps/<app>/` directly. This difference is accepted. The back link on each app page (`${BASE_URL}`) works in both.
 - The Vitest settings live in the `test` field of `vite.config.ts`: `include: ["**/*.test.ts"]`, `exclude: ["node_modules/**", "dist/**"]`, `watch: false`. `npm test` is `vitest run` (R-FND-10.1).
 - No `404.html` is emitted, so unknown paths get the GitHub Pages not-found page (R-FND-03.9).
 
