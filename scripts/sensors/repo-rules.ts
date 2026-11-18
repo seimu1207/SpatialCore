@@ -102,6 +102,10 @@ export const ALLOWED_PACKAGES: Readonly<Record<string, string>> = {
   "@types/node": "Node.js type definitions",
   "@types/react": "React type definitions",
   "@types/react-dom": "React type definitions",
+  three: "three.js",
+  "@types/three": "three.js type definitions",
+  "@react-three/fiber": "React Three Fiber",
+  "@react-three/drei": "drei (React Three Fiber helpers)",
 };
 
 export const MIN_ESLINT = [9, 37, 0] as const;

@@ -12,6 +12,10 @@ if (root !== null) {
     links: [
       { label: ghostMansionTitle, href: `${import.meta.env.BASE_URL}ghost-mansion/` },
       { label: moodwalkTitle, href: `${import.meta.env.BASE_URL}moodwalk/` },
+      {
+        label: { en: "Core demo", ja: "コアのデモ" },
+        href: `${import.meta.env.BASE_URL}core-demo/`,
+      },
     ],
   });
 }

@@ -129,12 +129,33 @@ const modelPackageBans = MODEL_PACKAGES.map((r) =>
   ban(r, "import-boundary: core/model must not depend on three, react, react-dom, or @react-three."),
 );
 
+// View_Helpers (core/view/helpers/) may import only zod, ../../model/*, and ./*.
+const helpersEscapeBan = ban(
+  `^\\.\\.${S}(?!\\.\\.${S}model${S})`,
+  "import-boundary: core/view/helpers may leave its folder only into core/model.",
+);
+const modelDotDotBan = ban(
+  `${S}model${S}(?:.*${S})?\\.\\.(?:${S}|$)`,
+  "import-boundary: core/view/helpers must not use '..' after model/.",
+);
+const dotDotAfterDotBan = ban(
+  `^\\.${S}(?:.*${S})?\\.\\.(?:${S}|$)`,
+  "import-boundary: core/view/helpers must not use '..' after './'.",
+);
+
 const TS = "*.{ts,tsx}";
 
 export function boundaryConfigs(): Linter.Config[] {
   return [
     scope("core-model", [`core/model/**/${TS}`], [], [appsBan, viewBan, ...modelPackageBans]),
     scope("core-view", [`core/view/**/${TS}`], [], [appsBan]),
+    // appsBan is repeated: a later flat-config entry replaces the rule options of core-view.
+    scope(
+      "core-view-helpers",
+      [`core/view/helpers/**/${TS}`],
+      [],
+      [appsBan, ...modelPackageBans, helpersEscapeBan, modelDotDotBan, dotDotAfterDotBan],
+    ),
     scope("core-other", [`core/**/${TS}`], ["core/model/**", "core/view/**"], [appsBan]),
     scope(
       "app-ghost-mansion",

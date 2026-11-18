@@ -116,7 +116,7 @@ Conventions for every task:
     - Tests that must pass: `typecheck.test.ts`.
     - _Requirements: 2.9, 6.2, 6.3, 6.4, 6.5, 10.16_
 
-- [ ] 7. Boundary rules and lint sensor
+- [x] 7. Boundary rules and lint sensor
   - [x] 7.1 Implement boundary rule generation (`boundary-rules.ts`)
     - Create `scripts/sensors/boundary-rules.ts` (`boundaryConfigs()`, seven disjoint scopes, regexes with `[\x2F\x5C]` separators, `no-restricted-imports` patterns, `no-restricted-syntax` selectors, `[boundary]` message prefix).
     - Design: ESLint config.
@@ -140,12 +140,12 @@ Conventions for every task:
     - Tests that must pass: `boundary-rules.test.ts`.
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 4.7, 10.8_
 
-  - [~] 7.5 Write Linter API tests for R-FND-04.10 forms
+  - [x] 7.5 Write Linter API tests for R-FND-04.10 forms
     - In `scripts/sensors/boundary-rules.test.ts` (same file as 7.4, added after it): every R-FND-04.10 form, including the substitution-free template that is allowed.
     - Tests that must pass: `boundary-rules.test.ts`.
     - _Requirements: 4.10, 10.8_
 
-  - [~] 7.6 Write lint sensor tests
+  - [x] 7.6 Write lint sensor tests
     - In `scripts/sensors/lint.test.ts` (60 s timeout): temporary project with a plain-JS-valid finding in each of `core/`, `apps/`, `scripts/`, and an `eslint.config.mjs` with `js.configs.recommended` only (07.3); clean project (07.4); broken config (07.5); two runs on the repo give identical output (07.2).
     - Tests that must pass: `lint.test.ts`.
     - _Requirements: 2.9, 7.2, 7.3, 7.4, 7.5, 10.16_
@@ -181,8 +181,8 @@ Conventions for every task:
     - _Requirements: 10.3, 10.4, 10.6, 10.16_
     - Tests that must pass: `pbt-failure.fixture.test.ts`.
 
-- [ ] 11. Kiro hooks
-  - [-] 11.1 Implement the dispatcher and create the first hook
+- [x] 11. Kiro hooks
+  - [x] 11.1 Implement the dispatcher and create the first hook
     - Create `scripts/sensors/hook-dispatch.ts` (kinds: `sections`, `code`, `schema`, `test`; reads stdin JSON; falls back to no file argument when the path is missing; captures child output; prints nothing on pass; on fail writes captured stdout then stderr to stderr and exits 1; `code` runs lint even if typecheck failed). Let it write the raw stdin payload to `node_modules/.cache/hook-payload.json` while this task is open.
     - Create hook `check-sections-on-save` with the Kiro hook tool (`createHook`, not by hand): PostFileSave, matcher from design.md, command `node scripts/sensors/hook-dispatch.ts sections`.
     - **Confirm (a), hook stdin:** the stdin JSON field that holds the saved path, from the logged payload of one real save.
@@ -191,33 +191,33 @@ Conventions for every task:
     - Design: Kiro hooks.
     - _Requirements: 9.1, 9.6, 9.7_
 
-  - [~] 11.2 Create the other three hooks
+  - [x] 11.2 Create the other three hooks
     - With the Kiro hook tool create: `check-code-on-save` (matcher for `.ts`/`.tsx` under `core/`, `apps/`, `scripts/`; timeout 180), `check-schema-on-save` (Scenario_File matcher), `test-on-task-done` (PostTaskExec, command `npm test`, timeout 180). No hook runs `check:build`, and none runs tests on save.
     - **[Human]** The hand triggers: trigger each hook once by hand and once with a non-matching file; record the result in `docs/decision-log.md`.
     - Design: Kiro hooks.
     - _Requirements: 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
 
-- [ ] 12. README
-  - [~] 12.1 Write `README.md`
+- [x] 12. README
+  - [x] 12.1 Write `README.md`
     - English. First heading `Haunted Graph Kit`. Public_URL as a link, `/ghost-mansion/` and `/moodwalk/` as relative links, the Node.js version equal to `.nvmrc`, and `npm ci`, `npm run build`, `npm test` in code blocks. No unsourced claims.
     - _Requirements: 12.3, 12.4, 12.5_
     - Design: Safety (S-FND-6).
 
-- [ ] 13. Deploy workflow and Pages
+- [x] 13. Deploy workflow and Pages
   - [~] 13.1 Write `.github/workflows/deploy.yml`
     - Trigger: push to `main` and `workflow_dispatch`. Permissions `contents: read`, `pages: write`, `id-token: write`. `concurrency: { group: pages, cancel-in-progress: false }`. Job `build`: checkout, `setup-node` with `node-version-file: .nvmrc`, `npm ci`, `git diff --exit-code package-lock.json`, typecheck, lint, `check:sections`, `check:schema`, `npm test`, `npm run build`, `npm run check:build`, `configure-pages`, `upload-pages-artifact` (`path: dist`). Job `deploy`: `needs: build`, `environment: github-pages`, `deploy-pages`. No `secrets.*`. Each step has its own name.
     - Design: Deploy workflow.
     - _Requirements: 11.1, 11.2, 11.3, 11.5, 11.6, 11.7_
 
-  - [~] 13.2 **[Human only]** Enable GitHub Pages
+  - [x] 13.2 **[Human only]** Enable GitHub Pages
     - On GitHub: repository `SpatialCore` → Settings → Pages → Source: **GitHub Actions**. Do this before the first push; otherwise `configure-pages` fails. Also check About → License shows MIT later at the gate.
     - _Requirements: 11.1, 11.4_
 
-- [~] 14. Checkpoint - Ensure all tests pass
+- [x] 14. Checkpoint - Ensure all tests pass
   - Run `npm run typecheck`, `npm run lint`, `npm run check:sections`, `npm run check:schema`, `npm test`, `npm run build`, `npm run check:build`. All exit 0. Ask the user if questions arise.
   - _Requirements: 2.9_
 
-- [~] 15. Verification gate (human approves; the agent must not mark this done)
+- [x] 15. Verification gate (human approves; the agent must not mark this done)
   - Prepared by the agent: the checklist below. The human does the steps marked **[Human]** after the first push to `main` and a successful Deploy_Workflow run.
   - **[Human]** Push when ready; open Actions and check the run is green and the step names are visible (R-FND-11.1, 11.2).
   - **[Human]** Open `https://seimu1207.github.io/SpatialCore/`: product name "Haunted Graph Kit", exactly one link each for Ghost Mansion and Moodwalk (3.1, 11.4).

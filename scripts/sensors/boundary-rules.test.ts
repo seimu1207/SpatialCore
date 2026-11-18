@@ -216,6 +216,35 @@ describe("R-FND-04.1-04.7 boundary import rules", () => {
     });
   });
 
+  describe("R-VIEW-01.3-01.5 core/view/helpers scope", () => {
+    const file = "core/view/helpers/a.ts";
+    const rejected = [
+      "three",
+      "react",
+      "@react-three/drei",
+      "../scene/x.ts",
+      "./../scene/x.ts",
+      "../../../apps/x/y.ts",
+      "../../model/../view/scene/x.ts",
+    ];
+    for (const spec of rejected) {
+      for (const [form, make] of Object.entries(FORMS)) {
+        it(`R-VIEW-01.10 rejects ${spec}: ${form}`, () => {
+          expectReported(make(spec), file, spec);
+        });
+      }
+    }
+    for (const spec of ["../../model/history.ts", "./snap.ts"]) {
+      it(`R-VIEW-01.10 accepts ${spec}`, () => {
+        expectNotReported(`import { a } from "${spec}";\nexport const b = a;\n`, file);
+      });
+    }
+    it("R-VIEW-01.4 core/view keeps allowing scene and package imports, and still bans apps", () => {
+      expectNotReported(`import "../scene/x.ts";\nimport "three";\n`, "core/view/x.ts");
+      expectReported(`import "../../apps/x.ts";\n`, "core/view/x.ts", "../../apps/x.ts");
+    });
+  });
+
   describe("R-FND-04.6 clean file", () => {
     it("R-FND-04.6 a clean file reports no finding at all", () => {
       const msgs = lintText(`export const answer: number = 42;\n`, "core/model/x.ts");

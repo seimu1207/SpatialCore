@@ -7,7 +7,24 @@ import { makeTmpProject, repoRoot, runSensor, type TmpProject } from "./tmp-proj
 const BASE = "/SpatialCore/";
 const ORIGIN = "https://seimu1207.github.io";
 const ALLOW = ["http://www.w3.org/", "https://react.dev/errors/"] as const;
-const PAGES = ["index.html", "ghost-mansion/index.html", "moodwalk/index.html"];
+const EXACT = [
+  "https://react.dev/link/hydration-mismatch",
+  "https://github.com/pmndrs/react-three-fiber#readme",
+  "https://github.com/pmndrs/react-three-fiber/issues",
+  "https://opencollective.com/react-three-fiber",
+  "https://json-schema.org/draft/2020-12/schema",
+  "http://json-schema.org/draft-07/schema#",
+  "http://json-schema.org/draft-04/schema#",
+  "http://[${e}]",
+  "https://github.com/drcmda",
+  "https://github.com/joshuaellis",
+  "https://github.com/codyjasonbennett",
+  "https://github.com/krispya",
+  "https://github.com/pmndrs/react-three-fiber.git",
+  "https://docs.pmnd.rs/react-three-fiber/api/objects#using-3rd-party-objects-declaratively",
+  "https://github.com/react-spring/react-use-measure/#resize-observer-polyfills",
+] as const;
+const PAGES = ["index.html", "ghost-mansion/index.html", "moodwalk/index.html", "core-demo/index.html"];
 const GOOD_HTML = `<html><head><script type="module" src="${BASE}assets/a.js"></script></head><body></body></html>`;
 
 function fakeDist(extra: Record<string, string> = {}): Record<string, string> {
@@ -33,9 +50,14 @@ describe("build-output", { timeout: 60_000 }, () => {
       expect(checkLayout([...PAGES, "assets/a.js"])).toEqual([]);
     });
     it("reports a missing page", () => {
-      const findings = checkLayout(["index.html", "moodwalk/index.html"]);
+      const findings = checkLayout(PAGES.filter((page) => page !== "ghost-mansion/index.html"));
       expect(findings).toHaveLength(1);
       expect(findings[0]).toContain("ghost-mansion/index.html");
+    });
+    it("reports a missing demo page", () => {
+      const findings = checkLayout(PAGES.filter((page) => page !== "core-demo/index.html"));
+      expect(findings).toHaveLength(1);
+      expect(findings[0]).toContain("core-demo/index.html");
     });
     it("reports dist/apps, including an empty folder entry", () => {
       expect(checkLayout([...PAGES, "apps"]).join("\n")).toContain("dist/apps");
@@ -60,14 +82,24 @@ describe("build-output", { timeout: 60_000 }, () => {
 
   describe("findForeignUrls", () => {
     it("reports a foreign URL", () => {
-      expect(findForeignUrls("fetch('https://example.com/x')", ORIGIN, ALLOW)).toEqual(["https://example.com/x"]);
+      expect(findForeignUrls("fetch('https://example.com/x')", ORIGIN, ALLOW, EXACT)).toEqual(["https://example.com/x"]);
     });
     it("allows the public origin, W3C namespace and react.dev/errors", () => {
       const text = `${ORIGIN}/SpatialCore/ http://www.w3.org/2000/svg https://react.dev/errors/418`;
-      expect(findForeignUrls(text, ORIGIN, ALLOW)).toEqual([]);
+      expect(findForeignUrls(text, ORIGIN, ALLOW, EXACT)).toEqual([]);
     });
     it("does not allow other react.dev paths", () => {
-      expect(findForeignUrls("https://react.dev/learn", ORIGIN, ALLOW)).toHaveLength(1);
+      expect(findForeignUrls("https://react.dev/learn", ORIGIN, ALLOW, EXACT)).toHaveLength(1);
+    });
+    it.each(EXACT)("allows the exact string %s", (url) => {
+      expect(findForeignUrls(`"${url}"`, ORIGIN, ALLOW, EXACT)).toEqual([]);
+    });
+    it("still reports other URLs under the exact-match hosts", () => {
+      const text = "'https://github.com/pmndrs/react-three-fiber/x' 'https://cdn.jsdelivr.net/x'";
+      expect(findForeignUrls(text, ORIGIN, ALLOW, EXACT)).toEqual([
+        "https://github.com/pmndrs/react-three-fiber/x",
+        "https://cdn.jsdelivr.net/x",
+      ]);
     });
   });
 

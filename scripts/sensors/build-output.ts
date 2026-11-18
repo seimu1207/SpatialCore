@@ -1,6 +1,6 @@
 // Pure scans for check:build. File lists use paths relative to dist/ with "/" separators.
 
-const PAGES = ["index.html", "ghost-mansion/index.html", "moodwalk/index.html"];
+const PAGES = ["index.html", "ghost-mansion/index.html", "moodwalk/index.html", "core-demo/index.html"];
 
 export function checkLayout(files: string[]): string[] {
   const set = new Set(files);
@@ -32,12 +32,18 @@ export function findBadAssetRefs(html: string, base: string, files: Set<string>)
   return findings;
 }
 
-export function findForeignUrls(text: string, origin: string, allow: readonly string[]): string[] {
+export function findForeignUrls(
+  text: string,
+  origin: string,
+  allow: readonly string[],
+  allowExact: readonly string[],
+): string[] {
   const found: string[] = [];
   for (const match of text.matchAll(/https?:\/\/[^\s"'`<>)]+/g)) {
     const url = match[0];
     if (url === origin || url.startsWith(origin + "/")) continue;
     if (allow.some((prefix) => url.startsWith(prefix))) continue;
+    if (allowExact.some((entry) => url === entry)) continue;
     found.push(url);
   }
   return found;

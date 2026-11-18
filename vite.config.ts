@@ -1,12 +1,26 @@
 import { access, mkdir, rename, rmdir } from "node:fs/promises";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
 import type { Plugin } from "vite";
 import { defineConfig } from "vitest/config";
 
 export const PUBLIC_ORIGIN = "https://seimu1207.github.io";
 export const BASE_PATH = "/SpatialCore/";
 
-const APP_NAMES = ["ghost-mansion", "moodwalk"] as const;
+// Each built page: where Vite writes it, and where it must end up in dist/.
+const PAGE_MOVES = [
+  { from: "apps/ghost-mansion/index.html", to: "ghost-mansion/index.html" },
+  { from: "apps/moodwalk/index.html", to: "moodwalk/index.html" },
+  { from: "core/view/demo/index.html", to: "core-demo/index.html" },
+] as const;
+// Emptied folders, deepest first. rmdir fails loudly if one is not empty.
+const EMPTY_FOLDERS = [
+  "apps/ghost-mansion",
+  "apps/moodwalk",
+  "apps",
+  "core/view/demo",
+  "core/view",
+  "core",
+] as const;
 
 async function exists(path: string): Promise<boolean> {
   try {
@@ -17,12 +31,27 @@ async function exists(path: string): Promise<boolean> {
   }
 }
 
-// Vite writes dist/apps/<app>/index.html. Move each page to dist/<app>/index.html.
+// Windows can report transient errors right after a write; retry those a few times.
+async function retry(action: () => Promise<void>): Promise<void> {
+  for (let attempt = 0; ; attempt++) {
+    try {
+      return await action();
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code;
+      const transient = code === "EBUSY" || code === "EPERM" || code === "EACCES";
+      if (!transient || attempt >= 5) throw error;
+      await new Promise((done) => setTimeout(done, 50 * (attempt + 1)));
+    }
+  }
+}
+
+// Vite writes dist/<source path>/index.html. Move each page to its public path.
 // Asset references use the absolute base path, so moving the HTML does not break them.
-function flattenAppPages(): Plugin {
+// Moves run one after another so no two file operations race.
+function flattenPages(): Plugin {
   let outDir = "";
   return {
-    name: "flatten-app-pages",
+    name: "flatten-pages",
     apply: "build",
     enforce: "post",
     configResolved(config) {
@@ -31,28 +60,23 @@ function flattenAppPages(): Plugin {
     async closeBundle(error?: Error) {
       // On a failed build, stay silent so the original error is the one shown.
       if (error) return;
-      const sources = APP_NAMES.map((name) => ({
-        name,
-        from: resolve(outDir, "apps", name, "index.html"),
-      }));
-      for (const source of sources) {
-        if (!(await exists(source.from))) return;
+      for (const { from } of PAGE_MOVES) {
+        if (!(await exists(resolve(outDir, from)))) return;
       }
-      for (const { name, from } of sources) {
-        await mkdir(resolve(outDir, name), { recursive: true });
-        await rename(from, resolve(outDir, name, "index.html"));
+      for (const { from, to } of PAGE_MOVES) {
+        await mkdir(dirname(resolve(outDir, to)), { recursive: true });
+        await retry(() => rename(resolve(outDir, from), resolve(outDir, to)));
       }
-      for (const { name } of sources) {
-        await rmdir(resolve(outDir, "apps", name));
+      for (const folder of EMPTY_FOLDERS) {
+        await retry(() => rmdir(resolve(outDir, folder)));
       }
-      await rmdir(resolve(outDir, "apps"));
     },
   };
 }
-
 export default defineConfig({
   base: BASE_PATH,
   appType: "mpa",
+  oxc: { jsx: { runtime: "automatic", importSource: "react" } },
   build: {
     outDir: "dist",
     rolldownOptions: {
@@ -60,10 +84,11 @@ export default defineConfig({
         main: resolve(import.meta.dirname, "index.html"),
         "ghost-mansion": resolve(import.meta.dirname, "apps/ghost-mansion/index.html"),
         moodwalk: resolve(import.meta.dirname, "apps/moodwalk/index.html"),
+        "core-demo": resolve(import.meta.dirname, "core/view/demo/index.html"),
       },
     },
   },
-  plugins: [flattenAppPages()],
+  plugins: [flattenPages()],
   test: {
     include: ["**/*.test.ts"],
     exclude: ["node_modules/**", "dist/**"],

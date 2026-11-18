@@ -115,26 +115,32 @@ describe("R-FND-10.14 no self-imports", () => {
 });
 
 describe("R-FND-10.15 / R-FND-08.2 no app names in the scenario schema", () => {
-  it("every file under core/model/ has no app name in its path or content (R-GRAPH-10.2)", () => {
-    const appFolders = readdirSync(join(root, "apps"), { withFileTypes: true })
-      .filter((e) => e.isDirectory())
-      .map((e) => e.name);
-    const names = [...new Set([...APP_NAMES, ...appFolders])];
-    const dir = join(root, "core", "model");
-    const files = listFiles(dir);
-    expect(files.length).toBeGreaterThan(0);
-    const hits: string[] = [];
-    for (const file of files) {
-      const haystack = `${file}\n${readFileSync(join(dir, file), "utf8")}`.toLowerCase();
-      for (const name of names) {
-        if (haystack.includes(name.toLowerCase())) hits.push(`${file}: ${name}`);
+  // Binary font files (.woff, .woff2, .ttf, .otf, .eot) are checked by path only; every other file
+  // (including .svg) is checked by path and content.
+  const BINARY_EXTENSIONS = /\.(woff2?|ttf|otf|eot)$/i;
+  for (const layer of ["model", "view"]) {
+    it(`every file under core/${layer}/ has no app name in its path or content (R-GRAPH-10.2, R-VIEW-01.6)`, () => {
+      const appFolders = readdirSync(join(root, "apps"), { withFileTypes: true })
+        .filter((e) => e.isDirectory())
+        .map((e) => e.name);
+      const names = [...new Set([...APP_NAMES, ...appFolders])];
+      const dir = join(root, "core", layer);
+      const files = listFiles(dir);
+      expect(files.length).toBeGreaterThan(0);
+      const hits: string[] = [];
+      for (const file of files) {
+        const content = BINARY_EXTENSIONS.test(file) ? "" : readFileSync(join(dir, file), "utf8");
+        const haystack = `${file}\n${content}`.toLowerCase();
+        for (const name of names) {
+          if (haystack.includes(name.toLowerCase())) hits.push(`${file}: ${name}`);
+        }
+        for (const name of findAppNames(haystack)) {
+          if (!hits.includes(`${file}: ${name}`)) hits.push(`${file}: ${name}`);
+        }
       }
-      for (const name of findAppNames(haystack)) {
-        if (!hits.includes(`${file}: ${name}`)) hits.push(`${file}: ${name}`);
-      }
-    }
-    expect(hits).toEqual([]);
-  });
+      expect(hits).toEqual([]);
+    });
+  }
   it("findAppNames is case-insensitive and reports names", () => {
     expect(findAppNames("// Robot helper in the Mansion")).toEqual(["robot", "mansion"]);
     expect(findAppNames("Ghost Mansion and MOODWALK and Mood Curve")).toEqual([
@@ -158,6 +164,21 @@ describe("R-FND-02.7 dependency list", () => {
     expect(checkDependencies({ devDependencies: { eslint: "9.37.0", lodash: "4.0.0" } })).toEqual([
       "dependency not allowed: lodash",
     ]);
+  });
+  it("accepts the 3D packages and their type packages", () => {
+    const names = [
+      "three",
+      "@types/three",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "react",
+      "react-dom",
+      "@types/react",
+      "@types/react-dom",
+    ];
+    const devDependencies: Record<string, string> = { eslint: "9.37.0" };
+    for (const n of names) devDependencies[n] = "1.0.0";
+    expect(checkDependencies({ devDependencies })).toEqual([]);
   });
   it("rejects a ranged, too-old, or missing eslint", () => {
     expect(checkDependencies({ devDependencies: { eslint: "^9.37.0" } })[0]).toContain("exact");

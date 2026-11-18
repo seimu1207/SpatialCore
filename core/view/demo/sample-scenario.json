@@ -1,0 +1,325 @@
+{
+  "edges": [
+    {
+      "from": "n1",
+      "id": "e1",
+      "to": "n2",
+      "type": "link"
+    },
+    {
+      "from": "n2",
+      "id": "e2",
+      "label": {
+        "en": "Next",
+        "ja": "次へ"
+      },
+      "to": "n3",
+      "type": "step"
+    },
+    {
+      "from": "n3",
+      "id": "e3",
+      "to": "n4",
+      "type": "step"
+    },
+    {
+      "from": "n4",
+      "id": "e4",
+      "to": "n5",
+      "type": "link"
+    },
+    {
+      "from": "n4",
+      "id": "e5",
+      "to": "n5",
+      "type": "step"
+    },
+    {
+      "from": "n5",
+      "id": "e6",
+      "to": "n6",
+      "type": "step"
+    },
+    {
+      "from": "n7",
+      "id": "e7",
+      "label": {
+        "en": "Loop",
+        "ja": "ループ"
+      },
+      "to": "n7",
+      "type": "link"
+    }
+  ],
+  "id": "sample",
+  "nodes": [
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "First card",
+          "ja": "1番目のカード"
+        }
+      },
+      "id": "n1",
+      "metadata": {},
+      "position": {
+        "x": -2,
+        "y": 0,
+        "z": 1
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "card",
+      "zone": "area-a"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Second card",
+          "ja": "2番目のカード"
+        }
+      },
+      "id": "n2",
+      "metadata": {},
+      "position": {
+        "x": 2,
+        "y": 0,
+        "z": 1
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "card",
+      "zone": "area-a"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "detail": {
+          "en": "Detail of the third note.",
+          "ja": "3番目のメモの詳細"
+        },
+        "text": {
+          "en": "Third note",
+          "ja": "3番目のメモ"
+        }
+      },
+      "id": "n3",
+      "metadata": {},
+      "position": {
+        "x": 0,
+        "y": 0,
+        "z": -1.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "note",
+      "zone": "area-a"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Fourth card",
+          "ja": "4番目のカード"
+        }
+      },
+      "id": "n4",
+      "metadata": {},
+      "position": {
+        "x": -2,
+        "y": 0.5,
+        "z": -8
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "card",
+      "zone": "area-b"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "detail": {
+          "en": "Detail of the fifth note.",
+          "ja": "5番目のメモの詳細"
+        },
+        "text": {
+          "en": "Fifth note",
+          "ja": "5番目のメモ"
+        }
+      },
+      "id": "n5",
+      "metadata": {},
+      "position": {
+        "x": 2,
+        "y": 0.5,
+        "z": -8
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "note",
+      "zone": "area-b"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Sixth card",
+          "ja": "6番目のカード"
+        }
+      },
+      "id": "n6",
+      "metadata": {},
+      "position": {
+        "x": 0,
+        "y": 1,
+        "z": -15.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "card",
+      "zone": "area-c"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Seventh note",
+          "ja": "7番目のメモ"
+        }
+      },
+      "id": "n7",
+      "metadata": {},
+      "position": {
+        "x": 0,
+        "y": 1,
+        "z": -20.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "note",
+      "zone": "area-c"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Loose card",
+          "ja": "どこにも属さないカード"
+        }
+      },
+      "id": "n8",
+      "metadata": {},
+      "position": {
+        "x": 6.5,
+        "y": 0,
+        "z": -4
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "card"
+    }
+  ],
+  "schemaVersion": 1,
+  "title": {
+    "en": "Sample scenario",
+    "ja": "サンプル"
+  },
+  "zones": [
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "area-a",
+      "label": {
+        "en": "Area A",
+        "ja": "エリアA"
+      },
+      "order": 0
+    },
+    {
+      "elevation": 0.5,
+      "enclosed": true,
+      "id": "area-b",
+      "label": {
+        "en": "Area B",
+        "ja": "エリアB"
+      },
+      "order": 1
+    },
+    {
+      "elevation": 1,
+      "enclosed": false,
+      "id": "area-c",
+      "label": {
+        "en": "Area C",
+        "ja": "エリアC"
+      },
+      "order": 2
+    }
+  ]
+}
