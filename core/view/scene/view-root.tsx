@@ -1,5 +1,5 @@
 import { Canvas } from "@react-three/fiber";
-import { useMemo, useRef, useSyncExternalStore } from "react";
+import { memo, useMemo, useRef, useSyncExternalStore } from "react";
 import { CameraRig } from "./camera-rig.tsx";
 import { ConnectOverlay, ConnectProjector } from "./connect-overlay.tsx";
 import { EdgeLines } from "./edge-line.tsx";
@@ -13,8 +13,28 @@ import type { ViewSnapshot, ViewStore } from "./view-store.ts";
 import { Walls } from "./wall.tsx";
 import { ZoneFloors } from "./zone-floor.tsx";
 
+/** Skips a redraw of the floors unless an input they use changed (a walk tick or an orbit move changes none). */
+function zoneLayerUnchanged(
+  a: { snapshot: ViewSnapshot; store: ViewStore },
+  b: { snapshot: ViewSnapshot; store: ViewStore },
+): boolean {
+  return (
+    a.store === b.store &&
+    a.snapshot.history.present === b.snapshot.history.present &&
+    a.snapshot.settings === b.snapshot.settings &&
+    a.snapshot.theme === b.snapshot.theme &&
+    a.snapshot.view.shownPresetId === b.snapshot.view.shownPresetId
+  );
+}
+
 /** Floors, labels, and Walls of the visible Zones, rebuilt from the current Scenario. */
-function ZoneLayer({ snapshot, store }: { snapshot: ViewSnapshot; store: ViewStore }): React.JSX.Element {
+const ZoneLayer = memo(function ZoneLayer({
+  snapshot,
+  store,
+}: {
+  snapshot: ViewSnapshot;
+  store: ViewStore;
+}): React.JSX.Element {
   const { history, settings, theme, view } = snapshot;
   const scenario = history.present;
   const preset = settings.presets.find((p) => p.id === view.shownPresetId) ?? settings.presets[0];
@@ -34,7 +54,7 @@ function ZoneLayer({ snapshot, store }: { snapshot: ViewSnapshot; store: ViewSto
       />
     </>
   );
-}
+}, zoneLayerUnchanged);
 
 /** The 3D view. The camera starts at the first preset pose (R-VIEW-08.8). */
 export function ViewRoot({ store, images }: { store: ViewStore; images: ImageCache }): React.JSX.Element {
@@ -53,6 +73,7 @@ export function ViewRoot({ store, images }: { store: ViewStore; images: ImageCac
       <Canvas
         dpr={[1, 1.5]}
         shadows={false}
+        gl={{ powerPreference: "high-performance" }}
         onPointerMissed={() => {
           // Empty space and Edges (no handlers) arrive here; floors and Walls call the same method (R-VIEW-12.3).
           store.emptyClick();

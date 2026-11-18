@@ -1,9 +1,10 @@
 import { Billboard, Line } from "@react-three/drei";
-import { useEffect, useMemo, useState } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import { CanvasTexture, DoubleSide, Euler, Quaternion, SRGBColorSpace, Vector3 } from "three";
 import { compareCodePoints } from "../../model/json.ts";
 import type { Edge, Node, Scenario } from "../../model/scenario-schema.ts";
 import { edgeMidpoint, edgeOffsets, loopSizes } from "../helpers/edge-layout.ts";
+import type { ViewSettings } from "../helpers/settings-schema.ts";
 import { edgeStyleFor, type Theme } from "../helpers/theme-schema.ts";
 import { computeVisibleSet } from "../helpers/visibility.ts";
 import { FONT_FAMILY, fontState, loadFont, type FontState } from "./font.ts";
@@ -183,7 +184,7 @@ function EdgeLabel({ text, color, at }: { text: string; color: string; at: Tuple
   );
 }
 
-function Drawing({
+const Drawing = memo(function Drawing({
   drawn,
   edge,
   theme,
@@ -195,9 +196,13 @@ function Drawing({
   font: FontState;
 }): React.JSX.Element {
   const style = edgeStyleFor(theme, edge.type);
-  const dir = new Vector3(...drawn.dir);
-  const quat = new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), dir);
-  const center = new Vector3(...drawn.tip).addScaledVector(dir, -drawn.arrowLength / 2);
+  const { quat, center } = useMemo(() => {
+    const d = new Vector3(...drawn.dir);
+    return {
+      quat: new Quaternion().setFromUnitVectors(new Vector3(0, 1, 0), d),
+      center: new Vector3(...drawn.tip).addScaledVector(d, -drawn.arrowLength / 2),
+    };
+  }, [drawn]);
   const label = edge.label?.en ?? "";
   return (
     <>
@@ -217,7 +222,7 @@ function Drawing({
       {font === "ready" && label !== "" ? <EdgeLabel text={label} color={theme.text} at={drawn.labelAt} /> : null}
     </>
   );
-}
+});
 
 function useFontState(): FontState {
   const [state, setState] = useState<FontState>(fontState());
@@ -233,7 +238,7 @@ function useFontState(): FontState {
   return state;
 }
 
-function LoopDrawing({
+const LoopDrawing = memo(function LoopDrawing({
   node,
   edge,
   radius,
@@ -248,14 +253,15 @@ function LoopDrawing({
   font: FontState;
   poses: NodePoses | undefined;
 }): React.JSX.Element {
-  const frame = frameOf(node, poses);
-  const drawn = layoutLoop(node, radius, edgeStyleFor(theme, edge.type).width, poses);
+  const width = edgeStyleFor(theme, edge.type).width;
+  const frame = useMemo(() => frameOf(node, poses), [node, poses]);
+  const drawn = useMemo(() => layoutLoop(node, radius, width, poses), [node, radius, width, poses]);
   return (
     <group position={frame.center} quaternion={frame.quat}>
       <Drawing drawn={drawn} edge={edge} theme={theme} font={font} />
     </group>
   );
-}
+});
 
 /** World-space points of the drawn curve of an Edge (a loop included), for the fog tube (D14). */
 export function drawnEdgePoints(
@@ -280,42 +286,92 @@ export function drawnEdgePoints(
   return layoutCurve(from, to, offset, width, poses)?.points ?? null;
 }
 
-function visibleEdgesOf(scenario: Scenario, snapshot: ViewSnapshot): { edges: Edge[]; ids: string[] } {
-  const { settings, view } = snapshot;
-  const preset = settings.presets.find((p) => p.id === view.shownPresetId) ?? settings.presets[0];
+function visibleEdgesOf(
+  scenario: Scenario,
+  settings: ViewSettings,
+  shownPresetId: string,
+): { edges: Edge[]; ids: string[] } {
+  const preset = settings.presets.find((p) => p.id === shownPresetId) ?? settings.presets[0];
   const ids = computeVisibleSet(scenario, preset.filter).edges;
   const wanted = new Set(ids);
   return { edges: scenario.edges.filter((e) => wanted.has(e.id)), ids };
 }
 
+type EdgeProps = { snapshot: ViewSnapshot; poses?: NodePoses };
+
+/** Skips a redraw unless an input the Edges use changed (a walk tick or an orbit move changes none). */
+function edgeLinesUnchanged(a: EdgeProps, b: EdgeProps): boolean {
+  return (
+    a.poses === b.poses &&
+    a.snapshot.history.present === b.snapshot.history.present &&
+    a.snapshot.settings === b.snapshot.settings &&
+    a.snapshot.theme === b.snapshot.theme &&
+    a.snapshot.view.shownPresetId === b.snapshot.view.shownPresetId
+  );
+}
+
+type EdgeItem = { kind: "loop"; node: Node; radius: number } | { kind: "curve"; drawn: Drawn };
+
+function layoutEdge(
+  edge: Edge,
+  nodes: ReadonlyMap<string, Node>,
+  offsets: ReadonlyMap<string, number>,
+  loops: ReadonlyMap<string, number>,
+  theme: Theme,
+  poses: NodePoses | undefined,
+): EdgeItem | null {
+  const from = nodes.get(edge.from);
+  const to = nodes.get(edge.to);
+  if (from === undefined || to === undefined) return null;
+  if (edge.from === edge.to) {
+    const radius = loops.get(edge.id);
+    return radius === undefined ? null : { kind: "loop", node: from, radius };
+  }
+  const drawn = layoutCurve(from, to, offsets.get(edge.id) ?? 0, edgeStyleFor(theme, edge.type).width, poses);
+  return drawn === null ? null : { kind: "curve", drawn };
+}
+
 /** One curve, arrow head, and optional label per visible Edge, or a loop for a self-edge (R-VIEW-05). */
-export function EdgeLines({ snapshot, poses }: { snapshot: ViewSnapshot; poses?: NodePoses }): React.JSX.Element {
+export const EdgeLines = memo(function EdgeLines({ snapshot, poses }: EdgeProps): React.JSX.Element {
   const font = useFontState();
   const scenario = snapshot.history.present;
-  const { theme } = snapshot;
-  const { edges, ids } = useMemo(() => visibleEdgesOf(scenario, snapshot), [scenario, snapshot]);
+  const { theme, settings } = snapshot;
+  const shownPresetId = snapshot.view.shownPresetId;
+  const { edges, ids } = useMemo(
+    () => visibleEdgesOf(scenario, settings, shownPresetId),
+    [scenario, settings, shownPresetId],
+  );
   const offsets = useMemo(() => edgeOffsets(scenario, ids, theme), [scenario, ids, theme]);
   const loops = useMemo(() => loopSizes(scenario, ids), [scenario, ids]);
   const nodes = useMemo(() => new Map(scenario.nodes.map((n) => [n.id, n])), [scenario]);
 
+  // Layout without a preview, kept while the camera moves. Only Edges that touch a previewed Node are laid out again.
+  const base = useMemo(
+    () => edges.map((edge) => layoutEdge(edge, nodes, offsets, loops, theme, undefined)),
+    [edges, nodes, offsets, loops, theme],
+  );
+
   return (
     <>
-      {edges.map((edge) => {
-        const from = nodes.get(edge.from);
-        const to = nodes.get(edge.to);
-        if (from === undefined || to === undefined) return null;
-        if (edge.from === edge.to) {
-          const radius = loops.get(edge.id);
-          if (radius === undefined) return null;
+      {edges.map((edge, i) => {
+        const touched = poses !== undefined && (poses.has(edge.from) || poses.has(edge.to));
+        const item = touched ? layoutEdge(edge, nodes, offsets, loops, theme, poses) : base[i];
+        if (item === null) return null;
+        if (item.kind === "loop") {
           return (
-            <LoopDrawing key={edge.id} node={from} edge={edge} radius={radius} theme={theme} font={font} poses={poses} />
+            <LoopDrawing
+              key={edge.id}
+              node={item.node}
+              edge={edge}
+              radius={item.radius}
+              theme={theme}
+              font={font}
+              poses={touched ? poses : undefined}
+            />
           );
         }
-        const width = edgeStyleFor(theme, edge.type).width;
-        const drawn = layoutCurve(from, to, offsets.get(edge.id) ?? 0, width, poses);
-        if (drawn === null) return null;
-        return <Drawing key={edge.id} drawn={drawn} edge={edge} theme={theme} font={font} />;
+        return <Drawing key={edge.id} drawn={item.drawn} edge={edge} theme={theme} font={font} />;
       })}
     </>
   );
-}
+}, edgeLinesUnchanged);

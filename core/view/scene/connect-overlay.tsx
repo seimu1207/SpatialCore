@@ -38,7 +38,8 @@ export function ConnectProjector({
     const first = snap.view.connect?.first ?? null;
     const node = first === null ? undefined : snap.history.present.nodes.find((n) => n.id === first);
     if (node === undefined) {
-      line.setAttribute("visibility", "hidden");
+      // No DOM write while it is already hidden (the usual case).
+      if (line.getAttribute("visibility") !== "hidden") line.setAttribute("visibility", "hidden");
       return;
     }
     const pose = snap.preview.get(node.id);

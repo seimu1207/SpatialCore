@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { CatmullRomCurve3, Euler, ExtrudeGeometry, Path, Shape, TubeGeometry, Vector3, type BufferGeometry } from "three";
 import { drawableEffects, shownEffects, type DrawableEffect } from "../helpers/effects-view.ts";
 import { edgeOffsets, loopSizes } from "../helpers/edge-layout.ts";
@@ -97,13 +97,33 @@ function EdgeFog({ effect, points }: { effect: DrawableEffect; points: [number, 
 }
 
 /** Fog volumes for the Effect_Requests that are shown, styled, visible, and drawable (R-VIEW-10, 18.4). */
-export function FogVolumes({ snapshot, poses }: { snapshot: ViewSnapshot; poses?: NodePoses }): React.JSX.Element {
+type FogProps = { snapshot: ViewSnapshot; poses?: NodePoses };
+
+/** Skips a redraw unless an input the fog uses changed. A Timeline tick that does not move the cursor changes none. */
+function fogUnchanged(a: FogProps, b: FogProps): boolean {
+  const x = a.snapshot;
+  const y = b.snapshot;
+  return (
+    a.poses === b.poses &&
+    x.history.present === y.history.present &&
+    x.settings === y.settings &&
+    x.theme === y.theme &&
+    x.appEffects === y.appEffects &&
+    x.view.shownPresetId === y.view.shownPresetId &&
+    x.view.timeline?.cursor === y.view.timeline?.cursor
+  );
+}
+
+export const FogVolumes = memo(function FogVolumes({ snapshot, poses }: FogProps): React.JSX.Element {
   const { history, settings, theme, appEffects, view } = snapshot;
   const scenario = history.present;
   const preset = settings.presets.find((p) => p.id === view.shownPresetId) ?? settings.presets[0];
   const visible = useMemo(() => computeVisibleSet(scenario, preset.filter), [scenario, preset]);
-  const timeline = view.timeline;
-  const shown = useMemo(() => shownEffects(appEffects, timeline), [appEffects, timeline]);
+  const cursor = view.timeline?.cursor ?? null;
+  const shown = useMemo(
+    () => shownEffects(appEffects, cursor === null ? null : { cursor }),
+    [appEffects, cursor],
+  );
   const drawable = useMemo(
     () =>
       drawableEffects(shown, scenario, visible, new Set(settings.zoneFootprints.map((f) => f.id)), theme),
@@ -112,6 +132,17 @@ export function FogVolumes({ snapshot, poses }: { snapshot: ViewSnapshot; poses?
   const offsets = useMemo(() => edgeOffsets(scenario, visible.edges, theme), [scenario, visible, theme]);
   const loops = useMemo(() => loopSizes(scenario, visible.edges), [scenario, visible]);
   const wallHeight = Math.min(1, settings.wallHeight);
+  // Edge curves and their fog tubes are rebuilt only when the Scenario, layout inputs, or a preview pose change.
+  const edgePoints = useMemo(() => {
+    const out = new Map<string, [number, number, number][] | null>();
+    for (const effect of drawable) {
+      const { kind, id } = effect.target;
+      if (kind !== "edge" || out.has(id)) continue;
+      const edge = scenario.edges.find((e) => e.id === id);
+      out.set(id, edge === undefined ? null : drawnEdgePoints(scenario, edge, offsets.get(id) ?? 0, loops.get(id), theme, poses));
+    }
+    return out;
+  }, [drawable, scenario, offsets, loops, theme, poses]);
 
   return (
     <>
@@ -143,7 +174,7 @@ export function FogVolumes({ snapshot, poses }: { snapshot: ViewSnapshot; poses?
         if (kind === "edge") {
           const edge = scenario.edges.find((e) => e.id === id);
           if (edge === undefined) return null;
-          const points = drawnEdgePoints(scenario, edge, offsets.get(id) ?? 0, loops.get(id), theme, poses);
+          const points = edgePoints.get(id) ?? null;
           return points === null || points.length < 2 ? null : <EdgeFog key={key} effect={effect} points={points} />;
         }
         const zone = scenario.zones.find((z) => z.id === id);
@@ -155,4 +186,4 @@ export function FogVolumes({ snapshot, poses }: { snapshot: ViewSnapshot; poses?
       })}
     </>
   );
-}
+}, fogUnchanged);

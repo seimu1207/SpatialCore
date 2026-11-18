@@ -770,3 +770,41 @@ describe("P-VIEW-2 the view never changes the model", () => {
     );
   });
 });
+
+describe("idle tick returns the same state (design.md D17)", () => {
+  it("an idle tick returns the very same object", () => {
+    const s = initialViewState(settings);
+    expect(tick(s, 0.016)).toBe(s);
+    expect(tick(s, 0)).toBe(s);
+    expect(tick(s, Number.NaN)).toBe(s);
+  });
+
+  it("a tick after the move has ended is idle again", () => {
+    let s = setPreset(initialViewState(settings), "b", pose(10), pose(0));
+    s = tick(s, 1);
+    expect(s.transition).toBeNull();
+    expect(tick(s, 0.016)).toBe(s);
+  });
+
+  it("a tick still clears a queued outbox", () => {
+    const base = initialViewState(settings);
+    const s: ViewState = { ...base, outbox: [{ kind: "timelineEnd" }] };
+    const next = tick(s, 0.016);
+    expect(next).not.toBe(s);
+    expect(next.outbox).toEqual([]);
+  });
+
+  it("a tick that moves something returns a new state", () => {
+    const moving = setPreset(initialViewState(settings), "b", pose(10), pose(0));
+    expect(tick(moving, 0.1)).not.toBe(moving);
+    const base = initialViewState(settings);
+    const playing: ViewState = { ...base, walk: { ...base.walk, state: "playing", duration: 10 } };
+    expect(tick(playing, 0.1)).not.toBe(playing);
+    const paused: ViewState = { ...base, walk: { ...base.walk, state: "paused" } };
+    // A paused walk that was never reported still reports once, then is idle for ticks.
+    const reportedOnce = tick(paused, 0.1);
+    expect(reportedOnce.outbox).toHaveLength(1);
+    expect(tick(reportedOnce, 0.1)).not.toBe(reportedOnce);
+    expect(tick(tick(reportedOnce, 0.1), 0.1).outbox).toEqual([]);
+  });
+});

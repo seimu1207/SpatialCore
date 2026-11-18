@@ -4,7 +4,6 @@ import type { History } from "../../model/history.ts";
 import { loadScenario } from "../../model/scenario-io.ts";
 import type { Scenario } from "../../model/scenario-schema.ts";
 import type { EffectRequest, Timeline } from "../../model/rule-schema.ts";
-import { timelineFromZones } from "../../model/timeline.ts";
 import { NEUTRAL_THEME } from "../helpers/neutral-theme.ts";
 import { FONT_FAMILY } from "../scene/font.ts";
 import { startCoreView } from "../start-view.tsx";
@@ -23,6 +22,7 @@ import perf09 from "./images/perf-09.svg?url";
 import perf10 from "./images/perf-10.svg?url";
 import sampleText from "./sample-scenario.json?raw";
 import { SAMPLE_SETTINGS, SAMPLE_THEME } from "./sample-settings.ts";
+import { buildDemoTimeline } from "./sample-timeline.ts";
 
 const WALK_SECONDS = 12;
 const FIXED_EFFECTS: readonly EffectRequest[] = [
@@ -75,7 +75,7 @@ function addControls(parent: HTMLElement, handle: CoreViewHandle, scenario: Scen
     });
   }
 
-  const outcome = timelineFromZones(scenario);
+  const outcome = buildDemoTimeline(scenario);
   const timeline: Timeline | null = outcome.ok ? outcome.value : null;
 
   addGroup(bar, "Walkthrough");

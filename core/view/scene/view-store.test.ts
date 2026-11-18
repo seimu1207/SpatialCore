@@ -342,6 +342,17 @@ describe("ViewStore subscription and stop", () => {
     expect(calls).toBe(n);
   });
 
+  it("an idle tick keeps the same snapshot object and does not notify (D17)", () => {
+    const { store } = setup();
+    let calls = 0;
+    store.subscribe(() => calls++);
+    const a = store.getSnapshot();
+    store.dispatch({ type: "tick", dt: 0.016 });
+    store.dispatch({ type: "tick", dt: 0.016 });
+    expect(store.getSnapshot()).toBe(a);
+    expect(calls).toBe(0);
+  });
+
   it("after stop no callback is called and nothing changes (3.5, 3.6)", () => {
     const { store, edits, walks, tls } = setup();
     store.startTimeline(timeline(["a"]));

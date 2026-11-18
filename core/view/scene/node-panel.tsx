@@ -1,7 +1,7 @@
 import { Edges } from "@react-three/drei";
 import { useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import type { Mesh } from "three";
+import { BoxGeometry, MeshBasicMaterial, type Mesh } from "three";
 import type { Node } from "../../model/scenario-schema.ts";
 import { nodeClickAction } from "../helpers/connect-ui.ts";
 import { showsDetail } from "../helpers/detail.ts";
@@ -64,9 +64,13 @@ function DetailLayer({
     [texture],
   );
   const { x, y, z } = node.position;
+  // One point object per pose, so the per-frame check below allocates nothing.
+  const at = useMemo(() => ({ x, y, z }), [x, y, z]);
   useFrame((state) => {
     const mesh = ref.current;
-    if (mesh !== null) mesh.visible = showsDetail(state.camera.position, { x, y, z }, detailDistance);
+    if (mesh === null) return;
+    const near = showsDetail(state.camera.position, at, detailDistance);
+    if (mesh.visible !== near) mesh.visible = near;
   });
   const width = BASE_WIDTH * node.scale.x;
   const height = DETAIL_BASE_HEIGHT * node.scale.y;
@@ -163,6 +167,20 @@ function useNodeGesture(node: Node, store: ViewStore, selected: boolean, editMod
   };
 }
 
+/** One box shared by every panel; the mesh scale sets the size. */
+const PANEL_BOX = new BoxGeometry(1, 1, 1);
+
+/** Side/back face materials, one per fill color, shared by every panel with that fill. */
+const sideMaterials = new Map<string, MeshBasicMaterial>();
+function sideMaterial(fill: string): MeshBasicMaterial {
+  let m = sideMaterials.get(fill);
+  if (m === undefined) {
+    m = new MeshBasicMaterial({ color: fill });
+    sideMaterials.set(fill, m);
+  }
+  return m;
+}
+
 const NodePanel = memo(function NodePanel({
   node,
   theme,
@@ -187,6 +205,17 @@ const NodePanel = memo(function NodePanel({
     [texture],
   );
 
+  const front = useMemo(() => new MeshBasicMaterial({ map: texture, toneMapped: false }), [texture]);
+  useEffect(
+    () => () => {
+      front.dispose();
+    },
+    [front],
+  );
+  // Box face order: +x, -x, +y, -y, +z, -z. Only the +z face carries the Front_Face picture.
+  const side = sideMaterial(style.fill);
+  const materials = useMemo(() => [side, side, side, side, front, side], [side, front]);
+
   const detailText = node.front.detail?.en ?? "";
 
   return (
@@ -206,16 +235,10 @@ const NodePanel = memo(function NodePanel({
       rotation={[node.rotation.x, node.rotation.y, node.rotation.z, "XYZ"]}
       scale={[BASE_WIDTH * node.scale.x, BASE_HEIGHT * node.scale.y, BASE_THICKNESS * node.scale.z]}
       userData={{ nodeId: node.id }}
+      geometry={PANEL_BOX}
+      material={materials}
       {...handlers}
     >
-      <boxGeometry args={[1, 1, 1]} />
-      {/* Box face order: +x, -x, +y, -y, +z, -z. Only the +z face carries the Front_Face picture. */}
-      <meshBasicMaterial attach="material-0" color={style.fill} />
-      <meshBasicMaterial attach="material-1" color={style.fill} />
-      <meshBasicMaterial attach="material-2" color={style.fill} />
-      <meshBasicMaterial attach="material-3" color={style.fill} />
-      <meshBasicMaterial attach="material-4" map={texture} toneMapped={false} />
-      <meshBasicMaterial attach="material-5" color={style.fill} />
       {selected && editMode === "edit" ? <Edges color={SELECTION_COLOR} /> : null}
       </mesh>
     </>
@@ -249,15 +272,26 @@ function useImageVersion(images: ImageCache): number {
 }
 
 /** One panel per Node of the Visible_Set, computed from the current Scenario and shown preset. */
-export function NodePanels({
-  snapshot,
-  images,
-  store,
-}: {
-  snapshot: ViewSnapshot;
-  images: ImageCache;
-  store: ViewStore;
-}): React.JSX.Element {
+type NodePanelsProps = { snapshot: ViewSnapshot; images: ImageCache; store: ViewStore };
+
+/** Skips a redraw unless an input the panels use changed (a walk tick or an orbit move changes none). */
+function nodePanelsUnchanged(a: NodePanelsProps, b: NodePanelsProps): boolean {
+  const x = a.snapshot;
+  const y = b.snapshot;
+  return (
+    a.store === b.store &&
+    a.images === b.images &&
+    x.history.present === y.history.present &&
+    x.settings === y.settings &&
+    x.theme === y.theme &&
+    x.preview === y.preview &&
+    x.view.shownPresetId === y.view.shownPresetId &&
+    x.view.selection === y.view.selection &&
+    x.view.editMode === y.view.editMode
+  );
+}
+
+export const NodePanels = memo(function NodePanels({ snapshot, images, store }: NodePanelsProps): React.JSX.Element {
   const font = useFontState();
   const imageVersion = useImageVersion(images);
   const { history, settings, theme, view } = snapshot;
@@ -287,4 +321,4 @@ export function NodePanels({
       })}
     </>
   );
-}
+}, nodePanelsUnchanged);

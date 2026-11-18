@@ -132,6 +132,8 @@ export class ViewStore {
       this.pending = this.pending.filter((e) => e.kind !== "timelinePosition" && e.kind !== "timelineEnd");
     }
     const next = reduceViewState(prev, action);
+    // The reducer returns the same object when nothing changed (an idle tick): no new snapshot, no notification.
+    if (next === prev) return;
     this.pending.push(...next.outbox);
     this.commit({ ...this.snapshot, view: next });
     if (action.type !== "modelChanged" && prev.shownPresetId !== next.shownPresetId) {
@@ -155,6 +157,7 @@ export class ViewStore {
 
   /** Takes the `connect` events out of the queue for the interaction code (R-VIEW-15). */
   takeConnects(): Extract<ViewEvent, { kind: "connect" }>[] {
+    if (this.pending.length === 0) return [];
     const out: Extract<ViewEvent, { kind: "connect" }>[] = [];
     this.pending = this.pending.filter((e) => {
       if (e.kind !== "connect") return true;

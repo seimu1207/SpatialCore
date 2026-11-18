@@ -190,7 +190,7 @@ function tickTimeline(state: ViewState, dt: number, events: ViewEvent[]): ViewSt
       cur = { ...cur, status: "ended" };
       events.push({ kind: "timelineEnd" });
     }
-    return { ...state, timeline: cur };
+    return cur === tl ? state : { ...state, timeline: cur };
   }
   cur = { ...cur, sinceMove: cur.sinceMove + dt };
   while (cur.status === "running" && cur.sinceMove >= state.stepDuration) {
@@ -214,6 +214,9 @@ function tick(state: ViewState, rawDt: number): ViewState {
   const timed = tickTimeline(walked, dt, events);
   const reported = walkEvent(timed);
   if (reported.event !== null) events.push(reported.event);
+  // An idle tick (no move, no walk, no Timeline, nothing to report, nothing queued) returns the same object, so the
+  // store makes no new snapshot and no subscriber redraws (design.md D17).
+  if (reported.state === state && events.length === 0 && state.outbox.length === 0) return state;
   return { ...reported.state, outbox: events };
 }
 
