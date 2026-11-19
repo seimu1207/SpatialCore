@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ndcToPixels, nodeClickAction } from "./connect-ui.ts";
+import { edgeClickAction, ndcToPixels, nodeClickAction } from "./connect-ui.ts";
 
 describe("nodeClickAction", () => {
   it("ignores clicks in view mode, with connect on or off", () => {
@@ -11,6 +11,15 @@ describe("nodeClickAction", () => {
   });
   it("connects, and does not select, in edit mode with connect on", () => {
     expect(nodeClickAction("edit", true)).toBe("connect");
+  });
+});
+
+describe("edgeClickAction", () => {
+  it("selects only in edit mode with connect off", () => {
+    expect(edgeClickAction("edit", false)).toBe("select");
+    expect(edgeClickAction("edit", true)).toBe("empty");
+    expect(edgeClickAction("view", false)).toBe("empty");
+    expect(edgeClickAction("view", true)).toBe("empty");
   });
 });
 

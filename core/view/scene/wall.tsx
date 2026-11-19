@@ -20,6 +20,7 @@ export function wallHandlers(store: ViewStore) {
   return {
     onClick: (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
+      if (e.delta > 5) return;
       store.emptyClick();
     },
     onPointerDown: (e: ThreeEvent<PointerEvent>) => {

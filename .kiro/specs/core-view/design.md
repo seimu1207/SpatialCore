@@ -11,6 +11,8 @@ Guiding choice: the smallest design that meets every criterion of `requirements.
 
 Requirements were approved on 2026-11-16 with Q2 to Q16 at their defaults (decision-log). This design fixes the items the requirements left to design.md: Euler order, base panel size, text area on image panels, scale minimum and scale mode, Wall occlusion, Reference_Machine and the 50-image test Scenario, the Walk_Callback frame rule, the Core_Demo output path, bundled fonts, and how React starts in the View_Host. Each is listed in "Design decisions" below.
 
+The requirements amendment of 2026-11-16 (Edge selection, the Select_Callback, and the `execute` handle function) is designed in "Amendment 2026-11-16: Selection notification and Edge selection" below. It changes existing files only and adds no file.
+
 ### Research findings that shape the design
 
 These were checked on 2026-11-16 with `npm view` against the npm registry and by unpacking the published packages (`npm pack`) and searching their files, not only in documentation.
@@ -49,6 +51,8 @@ Content was rephrased for compliance with licensing restrictions.
 | D17 | 50-image test Scenario (R-VIEW-16.4) | Generated at runtime by `core/view/demo/perf-scenario.ts`: 50 image Nodes in a 10 × 5 grid, 60 Edges, 5 Zones (4 `rect`, 1 `ring`, 1 of them `enclosed`). Images: 10 developer-made SVG files under `core/view/demo/images/` (1024 × 768 viewBox), each used by 5 Nodes. Each image is drawn into its Node's 512 × 384 panel texture, the same size every image Node uses. | Every Node composites its own 512 × 384 panel texture (see "Panel textures"), so the GPU cost per frame is the same for SVG or raster sources and does not depend on how many sources are distinct. |
 | D18 | Helper file grouping (R-VIEW-01.10) | A helper file may hold several closely related View_Helpers (for example `poseAt` and `buildZoneWaypoints`). "Its own file" is read as "a file that holds only View_Helpers, apart from rendering code". Test files may also be shared: `determinism.test.ts` tests every helper, and `settings-schema.test.ts` holds the one P-VIEW-8 test for both loaders (resolved O8). | Fewer files for one developer; the import ban is checked per file. |
 | D19 | Text font of DOM elements | The View_Host message `<p>` and the Core_Demo buttons set `font-family: CoreViewSans, sans-serif`. The message is shown before the font loads and may use the local `sans-serif` until then; neither causes a network request. | One font across canvas and DOM text; no remote font (R-VIEW-03.9). |
+| D20 | Edge hit tolerance (R-VIEW-23.1) | 6 CSS px on screen on each side of the drawn curve (line, loop, and up to the arrow tip), from one hidden screen-space hit line 12 CSS px wide per Edge. The arrow cone mesh is also hit on its own geometry. | Easy to hit a 0.03-unit line from the overview, small enough that two parallel Edges stay apart at normal zoom. |
+| D21 | Edge highlight (R-VIEW-23.2) | The selected Edge's line and arrow cone use the Node outline color `#ffd400` (`SELECTION_COLOR`), and the line width is 2 × its Edge_Style width (world units). Dash style and label are unchanged. | Same selection color as Nodes; a thicker line needs no extra mesh. |
 
 ## Architecture
 
@@ -152,7 +156,11 @@ export type CoreViewOptions = {
   onEdit: EditCallback;
   onWalk: WalkCallback;
   onTimeline: TimelineCallback;
+  onSelect?: SelectCallback;      // optional Select_Callback (R-VIEW-03.10, amendment 2026-11-16)
 };
+
+export type Selection = { kind: "node" | "edge"; id: string } | null;   // from helpers/view-state.ts
+export type SelectCallback = (selection: Selection) => void;
 
 export type CoreViewHandle = {
   setHistory(history: History): void;                         // R-VIEW-03.4
@@ -169,6 +177,7 @@ export type CoreViewHandle = {
   pauseWalk(): void; resumeWalk(): void; stopWalk(): void;    // R-VIEW-17.6
   startTimeline(timeline: Timeline): void;                    // R-VIEW-18.1
   pauseTimeline(): void; resumeTimeline(): void; stopTimeline(): void;
+  execute(command: EditCommand): void;                        // R-VIEW-23.10 to 23.12 (amendment 2026-11-16)
   stop(): void;                                               // R-VIEW-03.5
 };
 
@@ -184,7 +193,7 @@ export function startCoreView(options: CoreViewOptions): CoreViewHandle;
 5. Append the `div` and render `<ViewRoot store={store} />` (D11). Panel textures wait for `loadFont()` before drawing text; until then they draw fill and border only.
 6. Return the handle.
 
-A "message" handle has every function, and each is a no-op except `stop`, which removes the message element (R-VIEW-03.6, 03.7). A stopped handle sets `stopped = true`; every function then returns at once, and the store drops every callback (R-VIEW-03.5, 03.6). `stop` calls `root.unmount()`, which makes R3F dispose its `WebGLRenderer`; each scene component disposes the textures and geometries it created in its effect cleanup; then the `div` is removed.
+A "message" handle has every function, `execute` included, and each is a no-op except `stop`, which removes the message element (R-VIEW-03.6, 03.7). A stopped handle sets `stopped = true`; every function then returns at once, and the store drops every callback (R-VIEW-03.5, 03.6). `stop` calls `root.unmount()`, which makes R3F dispose its `WebGLRenderer`; each scene component disposes the textures and geometries it created in its effect cleanup; then the `div` is removed.
 
 Handle functions that take arguments check them first with helpers and report failures synchronously through `onEdit`. Then they dispatch one View_Action to the reducer. Callbacks caused by the reducer are emitted through the View_State outbox and flushed by the frame driver (D9).
 
@@ -197,7 +206,7 @@ Handle functions that take arguments check them first with helpers and report fa
 | `startTimeline(t)` | `createCursor(t)` | its errors (paths start with `timeline`), context `timeline` (R-VIEW-18.9) |
 | `connectOn(type)` | `type` is an Identifier (`nonBlank`) | `{ path: "edgeType" }`, context `edit` |
 
-`setHistory(h)` updates the store, dispatches `modelChanged` (so the Selection and a pending connection are cleared when their Node is gone, R-VIEW-12.5, 15.7), and reports `newlyMissingZoneRefs(settings, previous.present, h.present)` (R-VIEW-02.8). It keeps the Active_Preset and the camera (R-VIEW-03.4).
+`setHistory(h)` updates the store, dispatches `modelChanged` (so the Selection and a pending connection are cleared when their Node or Edge is gone or hidden, R-VIEW-12.5, 12.9, 15.7, 23.6), and reports `newlyMissingZoneRefs(settings, previous.present, h.present)` (R-VIEW-02.8). It keeps the Active_Preset and the camera (R-VIEW-03.4).
 
 ### Gestures and the History (`scene/drag.ts`, `scene/gizmo.tsx`, `ViewStore.execute`)
 
@@ -208,29 +217,32 @@ execute(command: EditCommand): void {
   const r = executeCommand(this.history, command);      // core/model/history.ts
   if (r.ok) { this.history = r.history; this.onEdit({ kind: "history", history: r.history }); }
   else this.onEdit({ kind: "errors", context: "edit", errors: r.errors, history: r.history });
-  this.dispatch({
-    type: "modelChanged",
-    nodeIds: r.history.present.nodes.map((n) => n.id),
-    visibleNodeIds: computeVisibleSet(r.history.present, this.shownFilter()).nodes,
-  });
+  this.dispatch(this.modelChangedAction());
 }
 undo(): void {
   const h = undo(this.history);
   const changed = h !== this.history;
   this.history = h;
   this.onEdit({ kind: "history", history: h });              // every call, as R-VIEW-16.1 says (resolved O2)
-  if (changed) this.dispatch({ type: "modelChanged", nodeIds: …, visibleNodeIds: … });
+  if (changed) this.dispatch(this.modelChangedAction());
 }
 // redo is the same with redo()
+private modelChangedAction(): ViewAction {                   // amendment 2026-11-16: all four lists
+  const s = this.history.present;
+  const v = computeVisibleSet(s, this.shownFilter());        // one Visible_Set computation
+  return { type: "modelChanged",
+    nodeIds: s.nodes.map((n) => n.id), visibleNodeIds: v.nodes,
+    edgeIds: s.edges.map((e) => e.id), visibleEdgeIds: v.edges };
+}
 ```
 
-`shownFilter()` is the Visibility_Filter of `shownPresetId`. `setHistory` dispatches `modelChanged` with the same two lists.
+`shownFilter()` is the Visibility_Filter of `shownPresetId`. `setHistory` and a ViewPreset switch dispatch `modelChangedAction()` too.
 
 - One Gesture → at most one `execute` call (R-VIEW-16.2). Every Gesture of this spec changes exactly one element, so no Gesture builds a Batch_Command; the rule "two or more elements → one Batch_Command" has no case here and is kept for later Gestures (multi-select is out of scope).
 - `undo` and `redo` on an empty `past` or `future` return the same History object (`core-graph`). The store still passes that returned History to the Edit_Callback once, as approved R-VIEW-16.1 says ("exactly once per call"), but draws nothing new and reports no error (R-VIEW-16.7).
 - A rejected command leaves `this.history` as it was. Each scene component draws from the store's History, and the drag or gizmo preview is cleared at Gesture end, so the next frame shows the pre-Gesture values (R-VIEW-13.7, 14.8, 16.6).
 
-**Click and drag (R-VIEW-12, R-VIEW-13).** R3F pointer events on panel meshes give the nearest hit first (`event.stopPropagation()` after the first), which is the Node nearest to the camera along the ray (R-VIEW-12.2). Only meshes of Nodes in the Visible_Set exist, so hidden Nodes cannot be clicked (R-VIEW-07.8). `onPointerMissed` on the `<Canvas>` and hits on floors, Walls, and Edges dispatch `select(null)`, which clears the Selection in every state, including while Connect_Mode is on (R-VIEW-12.3).
+**Click and drag (R-VIEW-12, R-VIEW-13).** R3F pointer events on panel meshes give the nearest hit first (`event.stopPropagation()` after the first), which is the Node nearest to the camera along the ray (R-VIEW-12.2). Only meshes of Nodes in the Visible_Set exist, so hidden Nodes cannot be clicked (R-VIEW-07.8). `onPointerMissed` on the `<Canvas>` and hits on floors and Walls dispatch `select(null)`, which clears the Selection in every state, including while Connect_Mode is on (R-VIEW-12.3). Edge clicks follow the amendment section below: they select the Edge in `edit` mode with connect off, and are empty clicks otherwise (R-VIEW-12.8, 23.8).
 
 1. `pointerdown` (primary button) records the screen point and the Node. If Edit_Mode is `edit` and the Node is the selected Node, the store sets `gestureActive` at once, before the 5 px threshold, so `OrbitControls` is off for the whole press and an orbit never starts under a drag (R-VIEW-08.9). The panel takes pointer capture; `pointerup`, `pointercancel`, and `lostpointercapture` clear `gestureActive`.
 2. `pointermove`: if the pointer is more than 5 CSS px from the press point and the press was on the selected Node in `edit` mode, a drag starts. The Zone_Plane is `THREE.Plane((0,1,0), −elevation)` of the Node's Zone, or `y = 0` with no Zone. Each move intersects the pointer ray with that plane; a hit gives `snap({ x: hit.x, y: node.position.y, z: hit.z }, snapStep)` as the preview position; no hit keeps the last preview (R-VIEW-13.4). Edges of that Node are drawn from the preview position in the same frame (R-VIEW-05.2).
@@ -495,7 +507,7 @@ export type ViewState = {
   walk: { state: WalkState; waypoints: CameraPose[]; marks: number[]; duration: number; time: number;
           progress: number; reported: WalkState };
   timeline: TimelinePlayback | null;
-  selection: string | null;
+  selection: Selection;                         // amendment 2026-11-16: was string | null (a Node id)
   gizmoMode: "rotate" | "scale";
   connect: { edgeType: string; first: string | null } | null;
   editMode: "view" | "edit";
@@ -507,17 +519,19 @@ export type ViewEvent =
   | { kind: "walk"; state: WalkState; progress: number }
   | { kind: "timelinePosition"; position: number }
   | { kind: "timelineEnd" }
-  | { kind: "connect"; from: string; to: string; edgeType: string };
+  | { kind: "connect"; from: string; to: string; edgeType: string }
+  | { kind: "selection"; selection: Selection };              // amendment 2026-11-16
+export type Selection = { kind: "node" | "edge"; id: string } | null;
 export type ViewAction =
   | { type: "setPreset"; id: string; pose: CameraPose; from: CameraPose }
   | { type: "tick"; dt: number }
   | { type: "walkStart"; waypoints: CameraPose[]; duration: number; linked: TimelineCursor | null }
   | { type: "walkPause" } | { type: "walkResume" } | { type: "walkStop"; presetPose: CameraPose }
   | { type: "timelineStart"; cursor: TimelineCursor } | { type: "timelinePause" } | { type: "timelineResume" } | { type: "timelineStop" }
-  | { type: "select"; id: string | null } | { type: "setGizmoMode"; mode: "rotate" | "scale" }
+  | { type: "select"; selection: Selection } | { type: "setGizmoMode"; mode: "rotate" | "scale" }
   | { type: "connectOn"; edgeType: string } | { type: "connectOff" } | { type: "connectClick"; id: string | null }
   | { type: "setEditMode"; mode: "view" | "edit" }
-  | { type: "modelChanged"; nodeIds: string[]; visibleNodeIds: string[] }
+  | { type: "modelChanged"; nodeIds: string[]; visibleNodeIds: string[]; edgeIds: string[]; visibleEdgeIds: string[] }
   | { type: "cameraApplied" };
 export function initialViewState(settings: ViewSettings): ViewState;
 export function reduceViewState(state: ViewState, action: ViewAction): ViewState;
@@ -538,10 +552,11 @@ Rules per action:
 | `timelineStart` | Replace any playback (R-VIEW-18.8): `{ cursor, mode: "paced", status: "running", sinceMove: 0 }`, emit `timelinePosition 0` (R-VIEW-18.2). |
 | `timelinePause` / `timelineResume` | Ignored while a linked playback runs with a `playing` or `paused` walk (R-VIEW-17.15); otherwise change `status` between `running` and `paused` and keep `sinceMove` (R-VIEW-18.6). |
 | `timelineStop` | `timeline = null`; the App list is drawn again (R-VIEW-18.7). |
-| `select` | `select(null)` sets `selection = null` in every state, whether `connect` is on or off (R-VIEW-12.3). `select(id)` is ignored in `view` mode or while `connect` is on; otherwise it sets `selection` (R-VIEW-12.1, 12.2, 12.7). |
+| `select` | `select(null)` sets `selection = null` in every state, whether `connect` is on or off (R-VIEW-12.3). `select({ kind, id })`, for a Node or an Edge, is ignored in `view` mode or while `connect` is on; otherwise it sets `selection` to a fresh `{ kind, id }`, replacing a Node or Edge Selection (R-VIEW-12.1, 12.2, 12.7, 12.8, 23.1). |
 | `connectOn` / `connectOff` / `connectClick` | As in "Connect" above (R-VIEW-15.2, 15.4, 15.7, 15.8). |
-| `setEditMode` | `view` clears `selection` and `connect.first` (R-VIEW-12.7, 15.7). |
-| `modelChanged` | Clears `selection` or `connect.first` when that Node is not in `nodeIds` or not in `visibleNodeIds` (R-VIEW-12.5, 12.6, 15.7). The store dispatches it after every History change and after `setPreset` takes effect, always with both lists (`visibleNodeIds` from `computeVisibleSet` with the shown filter). |
+| `setEditMode` | `view` clears `selection` (Node or Edge) and `connect.first` (R-VIEW-12.7, 15.7, 23.6). |
+| `modelChanged` | Clears a Node `selection` or `connect.first` when that Node is not in `nodeIds` or not in `visibleNodeIds`, and an Edge `selection` when that Edge is not in `edgeIds` or not in `visibleEdgeIds`; keeps it otherwise (R-VIEW-12.5, 12.6, 12.9, 15.7, 23.6, 23.7). The store dispatches it after every History change and after `setPreset` takes effect, always with all four lists (the visible lists from one `computeVisibleSet` call with the shown filter). |
+| every action | After the rule of its row: if the `selection` before and after differ (`sameSelection`: both `null`, or equal `kind` and equal `id`), append one `{ kind: "selection", selection }` event to the outbox; otherwise append none (R-VIEW-22.2 to 22.4). |
 | `cameraApplied` | `cameraOnce = null`; nothing else changes and the outbox is empty. Only the frame driver dispatches it, right after it has set the camera to `cameraOnce`. |
 
 `cameraOnce` is set by `initialViewState` (first ViewPreset's pose, R-VIEW-03.1), by the tick on which a transition ends (`to`), and by `walkStop` (`presetPose`). It is cleared only by `cameraApplied`, and replaced by `null` when `setPreset` starts a new transition or `walkStart` starts a walk, because those take over the camera. No other action, `tick` included, clears it, so a pose set between two frames is still applied on the next frame.
@@ -554,13 +569,13 @@ Rules per action:
 
 **Images (`image-cache.ts`).** `resolve(ref)` is called once per distinct Image_Reference per Core_View (R-VIEW-04.3), inside `try` (a throw counts as "no image"). A non-`null` source is loaded with `new Image()` (no `crossOrigin` attribute). On `load`, a 1-pixel `getImageData` probe on a scratch canvas detects taint. States: `loading`, `ready`, `failed`. `loading` and `failed` draw the panel as in R-VIEW-04.6; `ready` triggers a texture rebuild, shown in the next frame (R-VIEW-04.5). The Core_View never fetches an Image_Reference itself (S-VIEW-3).
 
-**Click helpers.** `helpers/connect-ui.ts` holds the pure `nodeClickAction` (what a Node click does for the Edit_Mode and Connect_Mode) and `ndcToPixels`. `ViewStore.gizmoHot` is true while the pointer is over a gizmo handle, so a press goes to the gizmo and not to the panel behind it. `ViewStore.emptyClick()` is the one place for a click on nothing, a floor, or a Wall (`select(null)`, plus `connectClick(null)` in `edit` mode with connect on); the canvas `onPointerMissed` and the floor and Wall `onClick` handlers (which `stopPropagation`) call it.
+**Click helpers.** `helpers/connect-ui.ts` holds the pure `nodeClickAction` (what a Node click does for the Edit_Mode and Connect_Mode) and `ndcToPixels`. `ViewStore.gizmoHot` is true while the pointer is over a gizmo handle, so a press goes to the gizmo and not to the panel behind it. `ViewStore.emptyClick()` is the one place for a click on nothing, a floor, or a Wall (`select(null)`, plus `connectClick(null)` in `edit` mode with connect on); the canvas `onPointerMissed` and the floor and Wall `onClick` handlers (which `stopPropagation`) call it. An Edge click that is not a selection (connect on, or `view` mode) also calls it (amendment section, R-VIEW-23.8).
 
 **Zones (`zone-floor.tsx`, `wall.tsx`).** A `rect` floor is a `PlaneGeometry(width, depth)` rotated flat at `y = elevation`; a `ring` floor is a `RingGeometry(innerRadius, outerRadius, 64)` rotated flat (the hole is left open, R-VIEW-06.1). The label is a flat text plane 0.01 above the floor: at the center for `rect`, and at `(x, z + (inner + outer) / 2)` for `ring`, so it lies inside the footprint (R-VIEW-06.2). Walls (only for visible, `enclosed`, footprinted Zones) are four `BoxGeometry` sides 0.05 thick for `rect`, and an open `CylinderGeometry(outer, outer, wallHeight, 64, 1, true)` for `ring`, from `elevation` to `elevation + wallHeight` (R-VIEW-06.3). All are rebuilt from the current Scenario on each change (R-VIEW-06.7).
 
 **Labels and Detail_Layers.** Edge labels are canvas text planes inside a drei `Billboard` at the midpoint (or the far point of a loop), in the Theme text color (R-VIEW-05.7); no plane is made for an absent or empty `en` (R-VIEW-05.8). A Detail_Layer is a canvas text plane under the panel in the panel's own frame, 1.6 × 0.6 base size, Theme text color on the Node fill color (R-VIEW-11.1).
 
-**Frame driver (`frame-driver.tsx`).** In `useFrame((state, dt) => …)`: dispatch `{ type: "tick", dt: min(dt, 0.25) }` (a cap, so a frame after a long tab pause does not jump the Timeline by many steps at once), apply `cameraFor(state)` to the camera and to the `OrbitControls` target when it is not `null`; if the applied pose came from `cameraOnce` (no transition and the walk is `idle`), dispatch `{ type: "cameraApplied" }`; then flush the outbox: walk events to `onWalk`, Timeline events to `onTimeline`, `connect` events to `store.execute`. The flush is skipped after `stop` (R-VIEW-03.5).
+**Frame driver (`frame-driver.tsx`).** In `useFrame((state, dt) => …)`: dispatch `{ type: "tick", dt: min(dt, 0.25) }` (a cap, so a frame after a long tab pause does not jump the Timeline by many steps at once), apply `cameraFor(state)` to the camera and to the `OrbitControls` target when it is not `null`; if the applied pose came from `cameraOnce` (no transition and the walk is `idle`), dispatch `{ type: "cameraApplied" }`; then flush the outbox: walk events to `onWalk`, Timeline events to `onTimeline`, `selection` events to `onSelect` (amendment), `connect` events to `store.execute`. The flush is skipped after `stop` (R-VIEW-03.5).
 
 **Performance plan (R-VIEW-16.4).** Per frame, the CPU work is the reducer tick, one `showsDetail` per visible Node, and R3F's scene walk. Textures are built only on change. 50 panel textures of 512 × 384 RGBA use about 39 MB of GPU memory. Edges use `Line2` (one draw call each). If the median frame time on the Reference_Machine is above 16.7 ms, the fallbacks in order are: (1) panel textures at 256 × 192; (2) `frameloop="demand"` with invalidation on change and during camera motion; (3) the intent.md 3.3 fallback for the failing check. Each fallback taken is logged in `docs/decision-log.md` (R-VIEW Q2).
 
@@ -619,6 +634,67 @@ The tasks that make these changes add the decision-log lines of R-VIEW-01.2 (pac
 - Vitest: `include` stays `**/*.test.ts`; helper tests run in the default Node environment with no DOM (R-VIEW-01.10). No `.test.tsx` file is written.
 - If the installed peer ranges conflict at `npm install` time (for example a newer React patch), the task keeps the versions above, which satisfy every published peer range on 2026-11-16, and reports any change to the human before it is made.
 
+### Amendment 2026-11-16: Selection notification and Edge selection
+
+This section designs R-VIEW-03.6, 03.7, 03.10, 12.7 to 12.9, 13.8, 17.4, 20.5, 20.8, R-VIEW-22, R-VIEW-23, and P-VIEW-14 of the 2026-11-16 requirements amendment. It follows the resolved decisions Q10 (Edges can be selected), Q17 (the App cannot set the Selection; it only hears it through the Select_Callback), and Q18 (`execute` runs in both Edit_Modes and during playback). It changes only existing files, adds no file, no package, and no App-specific name, and keeps the existing structure: one reducer action per person input, one store method for History changes, one outbox flush for callbacks.
+
+#### 1. Selection type (`helpers/view-state.ts`)
+
+`ViewState.selection` changes from `string | null` (a Node id) to `Selection = { kind: "node" | "edge"; id: string } | null`, exported from `view-state.ts` and re-exported from `start-view.tsx`. A Node and an Edge can therefore never be selected at the same time. The existing comparisons change as follows:
+
+| File | Today | After |
+|---|---|---|
+| `scene/node-panel.tsx` (`NodePanels`) | `selected={view.selection === stored.id}` | `selected={view.selection?.kind === "node" && view.selection.id === stored.id}`. The memo comparator keeps `x.view.selection === y.view.selection` (reference compare; a new Selection object only redraws). |
+| `scene/node-panel.tsx` (`onClick`) | `dispatch({ type: "select", id })` | `dispatch({ type: "select", selection: { kind: "node", id } })` |
+| `scene/gizmo.tsx` (`Gizmo`) | finds the Node when `view.selection !== null` | finds the Node only when `view.selection?.kind === "node"`, by `view.selection.id`; an Edge Selection mounts no gizmo (R-VIEW-23.5, 14.3) |
+| `scene/view-store.ts` (`emptyClick`) | `dispatch({ type: "select", id: null })` | `dispatch({ type: "select", selection: null })`; the `connectClick(null)` part is unchanged |
+| connect (`connectClick`, `helpers/connect-ui.ts`) | Node ids only | Unchanged: `connect.first` stays a Node id, and `nodeClickAction` is unchanged. `connect-ui.ts` gets one more pure function, `edgeClickAction(editMode, connectOn): "select" \| "empty"`, which returns `"select"` only for `edit` with connect off. |
+| tests (`view-state.test.ts`, `view-store.test.ts`) | `select` with `id`; `selection` compared to a string | same cases with `{ kind: "node", id }` |
+
+#### 2. Reducer changes (`helpers/view-state.ts`)
+
+- `select` takes `selection: Selection`. `null` clears in every state. A Node or Edge Selection is ignored in `view` mode or while `connect` is on, and set otherwise (the existing rule, now for both kinds). So an Edge becomes selected only in `edit` with Connect_Mode off (R-VIEW-23.1). When the new Selection equals the current one in `kind` and `id` (or both are `null`), `select` returns the same state object, so the store sees no change and nothing re-renders.
+- `modelChanged` also carries `edgeIds` and `visibleEdgeIds`. Its `alive` check looks in the Node lists for a Node Selection and in the Edge lists for an Edge Selection, and clears a Selection that is missing or not visible (R-VIEW-12.5, 12.9, 23.6). An Edge that is kept and visible stays selected with the same `id`, and the scene draws it as stored in the new Scenario (R-VIEW-23.7). `ViewStore.modelChangedAction()` builds the four lists from one `computeVisibleSet` call (`.nodes`, `.edges`); see the `execute` and `undo` code above.
+- `setEditMode("view")` clears any Selection, Node or Edge (existing code, R-VIEW-12.7, 23.6).
+- A ViewPreset switch is covered by the existing path: when `shownPresetId` changes, `ViewStore.dispatch` dispatches `modelChanged` with the new filter (R-VIEW-12.6, 23.6).
+- An Edge click while Connect_Mode is on goes to the existing `ViewStore.emptyClick()` (`select(null)`, then `connectClick(null)`), so it clears the Selection, cancels a pending first Node, selects nothing, and issues no Edit_Command (R-VIEW-23.8).
+- `reduceViewState` wraps the existing `switch`: `const next = reduceInner(state, action); return sameSelection(state.selection, next.selection) ? next : { ...next, outbox: [...next.outbox, { kind: "selection", selection: next.selection }] };`. `sameSelection(a, b)` is `true` when both are `null` or both have equal `kind` and `id`. This one place covers every change and every clear (R-VIEW-22.2 to 22.4). An idle `tick` returns the same object as before, because a tick never changes the Selection. `initialViewState` has `selection: null` and an empty outbox, so nothing is emitted at start (R-VIEW-22.1).
+
+No action takes or returns a History, so the Selection changes issue no Edit_Command (R-VIEW-20.8, 22.6, 23.9; P-VIEW-2).
+
+#### 3. Select_Callback (`start-view.tsx`, `scene/view-store.ts`)
+
+- `CoreViewOptions.onSelect?: SelectCallback`. `startCoreView` passes `options.onSelect` to `ViewStoreInit.onSelect?`; the store stores `init.onSelect ?? (() => undefined)`, so a caller with no `onSelect` works as before and gets no call (R-VIEW-03.10).
+- `ViewStore.flush` routes the new event: `else if (e.kind === "selection") this.onSelect(e.selection === null ? null : { ...e.selection })`. The copy keeps the App from holding the reducer's object. The events are flushed by the frame driver like walk and Timeline events, so the call comes in the frame after the change, once per change and in order (R-VIEW-22.2).
+- `ViewStore.stop` also sets `this.onSelect = () => undefined`; it already empties `pending` and makes `flush` return, so no call follows a stop (R-VIEW-22.5).
+- Nothing is called at start (R-VIEW-22.1), and nothing is called for an action that leaves the Selection equal in `kind` and `id` (R-VIEW-22.3), because the reducer emitted no event.
+
+#### 4. Edge hit test and highlight (`scene/edge-line.tsx`, `scene/view-root.tsx`)
+
+- `view-root.tsx` passes `store` to `<EdgeLines snapshot={snap} poses={snap.preview} store={store} />`. The `edgeLinesUnchanged` comparator also compares `store`, `view.selection`, and `view.editMode`. `Drawing` gets `edgeId`, `store`, and `selected` props; `LoopDrawing` passes them through. Its canvas `onPointerMissed` comment changes to "Empty space arrives here".
+- In `Drawing`, the line and the arrow cone sit inside one `<group onClick={…}>`; the label `Billboard` stays outside the group, so a label click is not an Edge click. The group also holds one hit line: a drei `Line` with the same points plus the arrow tip, `worldUnits={false}`, `lineWidth={12}` (CSS px), and `visible={false}`, so it draws nothing. Line2 raycasting in screen space hits within half that width, which gives the 6 CSS px tolerance of D20 for the line, the loop, and the arrow head (R-VIEW-23.1). `visible={false}` is expected to work, because three's `Raycaster` does not check `visible`. If the build task finds that the hidden hit line gets no click, the fallback is `material.visible = false` on the hit line's material (the object stays visible to the raycast and still adds no draw call), not `opacity={0}`; the task notes the choice. Gate item 11 (perf) is measured with the hit lines in place.
+- The handler: `e.stopPropagation()`; if `e.delta > 5` (R3F's pointer travel since `pointerdown`, the 5 px click rule of R-VIEW-12.1, 12.4), return; else `edgeClickAction(editMode, connect !== null)` from the store snapshot gives `"select"` → `store.dispatch({ type: "select", selection: { kind: "edge", id: edgeId } })`, or `"empty"` → `store.emptyClick()` (R-VIEW-12.8, 23.8).
+- The same one-line check `if (e.delta > 5) return;` is added to the Node `onClick` (`node-panel.tsx`) and to `wallHandlers.onClick` (`wall.tsx`, also used by floors). A drag that ends on a Node, a floor, or a Wall therefore changes no Selection (R-VIEW-12.4, 22.3). The R3F `delta` behaviour is checked once by hand in the build task (part 6).
+- Precedence uses what exists: R3F sorts all hits of the interactive objects by distance and calls the nearest handler first; Node panels, floors, and Walls all call `stopPropagation`. So a Node nearer to the camera wins (R-VIEW-23.3), and a Wall or floor nearer than the Edge makes the click an empty click through its own handler (R-VIEW-23.4). Edges register only `onClick`, so R3F does not raycast them on pointer moves.
+- The Edge group has no `onPointerDown` and never touches `OrbitControls` or `gestureActive`. A drag that starts on a selected Edge therefore orbits like a drag on empty space, moves nothing, and issues no Edit_Command (R-VIEW-23.5).
+- Highlight (D21, R-VIEW-23.2): when `selected`, the visible `Line` gets `color={SELECTION_COLOR}` and `lineWidth={2 * style.width}`, and the cone gets the same color. `SELECTION_COLOR` (`#ffd400`) is exported from `node-panel.tsx` and imported by `edge-line.tsx`. `selected` is true only for the Edge whose `id` equals an Edge Selection's `id`, and Node outlines are drawn only for a Node Selection, so no other Edge and no Node is highlighted.
+
+#### 5. `execute` on the handle (`start-view.tsx`, `scene/view-store.ts`)
+
+- `CoreViewHandle.execute(command: EditCommand)` (`EditCommand` from `core/model/commands.ts`, one Edit_Command or a Batch_Command). In `startCoreView` it is `execute: guard((c) => { store.cancelGesture(); store.execute(c); })`. After `stop` the guard returns at once, and `messageHandle` gets `execute: noop`, so a stopped view or a message handle throws nothing, changes no History, and calls neither callback (R-VIEW-03.6, 03.7).
+- It reuses the existing `ViewStore.execute`: an accepted command updates the History and calls `onEdit` once with it; a rejected one calls `onEdit` once with the errors and the unchanged History (R-VIEW-23.10, 23.11). Either way the store dispatches `modelChanged`, which keeps the Selection when the History is unchanged and clears a removed or hidden Edge after a remove or update (R-VIEW-23.6, 23.7).
+- `ViewStore.execute` has no Edit_Mode or playback check, and `modelChanged` does not touch `walk`, `timeline`, `transition`, or `cameraOnce`, so `execute` works in both Edit_Modes and during a Walkthrough or Timeline playback and leaves their state and the camera unchanged (R-VIEW-12.7, 13.8, 17.4, 20.5, 23.12).
+- New method `ViewStore.cancelGesture()`: `setPreview(null)`; `setGestureActive(false)`; and, when `connect?.first` is set, `dispatch({ type: "connectClick", id: null })`, which also removes the connection line of R-VIEW-15.6. With no Gesture it does nothing. The Gesture code reads the flag so a cancelled Gesture stays cancelled until its pointer is released: in `node-panel.tsx`, `onPointerMove` returns when `!store.gestureActive`, and `end` builds no command when `!store.gestureActive`; in `gizmo.tsx`, `onObjectChange` returns and `finish` builds no command when `!store.gestureActive` (it still restores the proxy and orbit). The internal Gesture paths call `store.execute` directly, not `cancelGesture`, so they are unchanged (R-VIEW-23.12).
+
+#### 6. Tests and the Core_Demo
+
+- **P-VIEW-14** is its own property test in `view-state.test.ts` (Property 14 below).
+- **Generator change** in `helpers/arbitraries.ts`, `actionSeqArb`: the `select` entry draws from `null`, `{ kind: "node", id }` with the existing ids `n1`–`n4`, and `{ kind: "edge", id }` with new ids `e1`–`e3`; `modelChanged` gets `edgeIds` and `visibleEdgeIds` from `fc.subarray(["e1", "e2", "e3"])`. `actionSeqArb` also gets one pseudo-action `edgeClick(id)` with the same Edge ids. The P-VIEW-14 test expands it with `edgeClickAction` into the actions the scene dispatches; the raw `select({ kind: "edge", id })` stays in the generator and is not expanded. P-VIEW-1, P-VIEW-2, and P-VIEW-12 use the same generator (they expand `edgeClick` the same way), so they also run with Edge Selections.
+- **P-VIEW-12 update**: its Selection check after `modelChanged` reads "a Node Selection is in both Node lists, an Edge Selection in both Edge lists".
+- **ViewStore example tests** (`scene/view-store.test.ts`, Node, no WebGL): `onSelect` is called once per Selection change after `flush`, with `{ kind, id }` or `null`; no call at start; no call for a repeated select of the same Node; none after `stop` even with an event pending; a store with no `onSelect` works. `execute` during a drag (`setGestureActive(true)`, `setPreview(…)`, a pending first Node) clears the preview, `gestureActive`, and `connect.first`, then applies the command once; `execute` with a rejected command keeps the History and the Selection; `execute` in `view` mode and during a `playing` walk applies the command and leaves `walk` and `timeline` unchanged; `execute` after `stop` changes nothing and calls no callback; with an Edge selected that ViewPreset `p2` hides, `setPreset("p2")` and a 0.6 s `tick` make the Selection `null` and call `onSelect(null)` exactly once (R-VIEW-23.6, 22.4). The message handle's `execute` is the shared `noop`; `tsc` checks that the key exists (`CoreViewHandle` requires it) and the reviewer checks that it is `noop`, because `start-view.tsx` needs a DOM and the tests run in Node with no DOM (R-VIEW-01.10). This `tsc` and reviewer method is the check for the message case of R-VIEW-03.6 and 03.7.
+- **Build-task manual check** (by hand on the Core_Demo in the build task, once): R3F's `delta` is the pointer travel in CSS px since `pointerdown`, so a drag that ends on an Edge, a Node, a floor, or a Wall makes no Selection change; while a gizmo handle is pressed, `execute` does not move the camera.
+- **Core_Demo** (`core/view/demo/main.tsx`): one text line in the button bar, `Selection: none`, `Selection: node <id>`, or `Selection: edge <id>`, set with `textContent` from `onSelect`; and one button `Remove selected edge` that calls `handle.execute({ kind: "removeEdge", id })` when the last Selection is an Edge and does nothing otherwise. The existing Undo button restores the Edge.
+
 ## Data Models
 
 Types are inferred from the Zod schemas in `settings-schema.ts` and `theme-schema.ts` (R-VIEW-02.1, 19.1). Localized_Text and Identifier reuse `localizedTextSchema` and `nonBlank` from `core/model/scenario-schema.ts`. `ViewState`, `ViewAction`, `ViewEvent`, `VisibleSet`, and the result types are plain TypeScript types next to the function that uses them; they are not schemas because they never come from outside.
@@ -670,7 +746,7 @@ The Sample_Scenario (`core/view/demo/sample-scenario.json`) has three Zones `are
 
 ### PBT properties
 
-P-VIEW-1 to P-VIEW-9 are the properties of `requirements.md`, written here as tests. P-VIEW-10 to P-VIEW-13 are added by this design, because the requirement properties do not cover four helpers that carry rules: the missing Zone reference report (R-VIEW-02.8), the choice of drawable effects (R-VIEW-10), the View_State_Reducer that runs the Walkthrough, Timeline, Selection, and Connect_Mode rules (R-VIEW-08, 12, 15, 17, 18), and the Link_Conditions (R-VIEW-17.11, 17.12). In the **Validates** lines, "Requirements X.Y" means R-VIEW-0X.Y (for example 7.3 = R-VIEW-07.3, 17.11 = R-VIEW-17.11).
+P-VIEW-1 to P-VIEW-9 are the properties of `requirements.md`, written here as tests. P-VIEW-10 to P-VIEW-13 are added by this design, because the requirement properties do not cover four helpers that carry rules: the missing Zone reference report (R-VIEW-02.8), the choice of drawable effects (R-VIEW-10), the View_State_Reducer that runs the Walkthrough, Timeline, Selection, and Connect_Mode rules (R-VIEW-08, 12, 15, 17, 18), and the Link_Conditions (R-VIEW-17.11, 17.12). P-VIEW-14 comes from the 2026-11-16 requirements amendment. In the **Validates** lines, "Requirements X.Y" means R-VIEW-0X.Y (for example 7.3 = R-VIEW-07.3, 17.11 = R-VIEW-17.11).
 
 Every property runs with `fc.assert(fc.property(…), { numRuns: 100 })` or more. Each property is one test. Each test name starts with its property ID (R-FND-10.5) and carries the tag comment `// Feature: core-view, Property <n>: <P-VIEW-n title>`. Only View_Helpers are tested; the tests import no three.js, React, or drei module and run in Node with no DOM.
 
@@ -703,7 +779,9 @@ The `core-graph` and `core-rules` generators are reused: `identifierArb`, `local
 
 *For any* valid Scenario `s`, History `h = createHistory(s)`, View_Settings from `settingsArb(s)`, and action sequence from `actionSeqArb`, folding `reduceViewState` over the sequence, and calling `computeVisibleSet`, `poseAt`, `showsDetail`, `loadTheme`, and `drawableEffects` on the way, leaves `h` `jsonEqual` to a copy taken before, leaves `saveScenario(h.present).text` identical to the text before, and no returned View_State holds a key whose value has the fields `past`, `present`, `future` (checked by a deep walk).
 
-**Validates: Requirements 1.8, 1.9, 8.10, 8.11, 20.5**
+With the amended `actionSeqArb`, the sequences include Node and Edge Selection changes and clears.
+
+**Validates: Requirements 1.8, 1.9, 8.10, 8.11, 20.5, 20.8, 22.6, 23.9**
 
 ### Property 3: P-VIEW-3 visibility rules
 
@@ -768,7 +846,7 @@ The `core-graph` and `core-rules` generators are reused: `identifierArb`, `local
 - Paced Timeline (no pause): after summed `dt` `t` since start, `position = min(last, floor(t / stepDuration))`, the outbox events list each new position once in increasing order, and `timelineEnd` is emitted once, on the tick where `t ≥ (last + 1) × stepDuration`; time while `paused` adds nothing. The reference model accumulates `dt` in the same operation order as the reducer (or compares near step boundaries with a small tolerance).
 - Linked Timeline: `position` is the largest `i` with `marks[i] ≤ walk.progress`, it never uses `stepDuration`, Timeline pause and resume are ignored while the walk is `playing` or `paused`, and the playback ends on the tick the walk reaches `finished`.
 - Camera: `cameraFor(initialViewState(settings))` is the first ViewPreset's pose; after `walkStop` from `playing` or `paused`, `cameraFor` returns `presetPose` after every following action (the first `tick` included) until the first `cameraApplied`, `setPreset`, or `walkStart`; after `cameraApplied` with no transition and an `idle` walk, `cameraFor` is `null`; right after `walkStart`, `cameraFor` returns the first Waypoint even when a preset transition was running.
-- Selection and connect: in `view` mode `selection` and `connect.first` are `null`; after `select(null)`, `selection` is `null` whether `connect` is on or off; after `modelChanged`, `selection` and `connect.first` are `null` or in both id lists; a `connect` event is emitted only for two different Node ids in `edit` mode, after which `connect.first` is `null` and `connect` stays on.
+- Selection and connect: in `view` mode `selection` and `connect.first` are `null`; after `select(null)`, `selection` is `null` whether `connect` is on or off; after `modelChanged`, `selection` is `null`, a Node in both Node lists, or an Edge in both Edge lists, and `connect.first` is `null` or in both Node lists; a `connect` event is emitted only for two different Node ids in `edit` mode, after which `connect.first` is `null` and `connect` stays on.
 
 **Validates: Requirements 3.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.9, 12.3, 12.5, 12.6, 12.7, 15.2, 15.4, 15.7, 15.8, 17.2, 17.3, 17.5, 17.6, 17.7, 17.9, 17.10, 17.13, 17.14, 17.15, 18.2, 18.3, 18.5, 18.6, 18.8, 18.10**
 
@@ -777,6 +855,22 @@ The `core-graph` and `core-rules` generators are reused: `identifierArb`, `local
 *For any* Scenario, footprints for which `buildZoneWaypoints` succeeds, and Timeline from `timelineArb(s, zones)`: `checkLinkedTimeline` returns `[]` exactly for the matching Timelines; for each broken variant it returns a non-empty list whose every path starts with `timeline`; for a Camera_Path with `waypoints` instead of `fromZones` it returns exactly one error at `timeline`; and a Timeline built with `timelineFromZones` on a Scenario where every Zone has a footprint passes.
 
 **Validates: Requirements 17.11, 17.12**
+
+### Property 14: P-VIEW-14 Edge selection and Selection notification
+
+*For any* settings and action sequence from the amended `actionSeqArb`, folding `reduceViewState` from `initialViewState(settings)`, where every generated pseudo-action `edgeClick(id)` is expanded with `edgeClickAction(editMode, connect !== null)` into the actions the scene dispatches (`select` of that Edge for `"select"`; `select(null)` then `connectClick(null)` for `"empty"`) and every raw `select({ kind: "edge", id })` is folded as is, not expanded, satisfies:
+
+- the initial View_State has `selection === null` and an empty outbox;
+- after every reducer step, `selection` is `null` or one `{ kind, id }` (never a Node and an Edge together);
+- (raw `select`) an Edge becomes selected only on a `select` of that Edge in `edit` mode with `connect === null`; a raw `select` of an Edge in `view` mode or with connect on leaves `selection` unchanged;
+- (`edgeClick`) an Edge click with connect on leaves `selection === null` and `connect.first === null`;
+- after `modelChanged`, an Edge Selection that was in both Edge lists keeps its `id`, and one missing from either list is `null`; a Node Selection missing from either Node list is `null` (a new History and a ViewPreset switch both reach the reducer as `modelChanged`, the switch with the new filter's lists, so this case covers both);
+- after `setEditMode("view")`, `selection === null`;
+- each step's outbox holds exactly one `selection` event when the Selection before and after the step differ, with `selection` `jsonEqual` to the new Selection, and none when they are equal. "Equal" is an equality check written in the test (both `null`, or equal `kind` and `id`), not the implementation's `sameSelection`.
+
+The test is checked on plain data, without rendering, under its own name `P-VIEW-14`, separate from P-VIEW-12.
+
+**Validates: Requirements 3.10, 12.5, 12.8, 12.9, 22.1, 22.2, 22.3, 22.4, 23.1, 23.6, 23.7, 23.8**
 
 ## Error Handling
 
@@ -796,6 +890,8 @@ No View_Helper throws. No handle function throws to the App. Every expected faul
 | Theme fails | `setTheme` | Theme_Loader errors, context `theme`; current Theme kept (R-VIEW-19.7) |
 | Effect list fails its schema | `setEffects` | Errors under `effects`, context `effects`; previous list kept |
 | Effect target missing, hidden, unstyled, or Zone without footprint | `drawableEffects` | Not drawn; no error (R-VIEW-10.3 to 10.5, 10.10) |
+| Rejected command from the App through `execute` | handle `execute` → `ViewStore.execute` | Errors and the unchanged History, context `edit`; Selection and drawing unchanged; an active Gesture was cancelled first (R-VIEW-23.11, 23.12) |
+| `execute` after `stop` or on a message handle | handle | No-op; no callback (R-VIEW-03.6, 03.7) |
 | Rejected Edit_Command (drag, gizmo, connect) | `ViewStore.execute` | Errors and the unchanged History, context `edit`; previews cleared, pre-Gesture values drawn (R-VIEW-13.7, 14.8, 15.9, 16.6) |
 | Undo or redo with an empty stack | `ViewStore.undo/redo` | One Edit_Callback call with the unchanged History (R-VIEW-16.1); nothing drawn anew, no error (R-VIEW-16.7; resolved O2) |
 | Image_Resolver returns `null`, throws, or the image fails or is tainted | `image-cache.ts` | Panel drawn with text or empty in its Node_Style; other Nodes unaffected (R-VIEW-04.6) |
@@ -815,7 +911,7 @@ No View_Helper throws. No handle function throws to the App. Every expected faul
   - `gesture-commands.test.ts`: P-VIEW-7.
   - `zone-refs.test.ts`: P-VIEW-10.
   - `effects-view.test.ts`: P-VIEW-11.
-  - `view-state.test.ts`: P-VIEW-2, P-VIEW-12.
+  - `view-state.test.ts`: P-VIEW-2, P-VIEW-12, P-VIEW-14 (its own test, amendment 2026-11-16).
   - `link.test.ts`: P-VIEW-13.
   - `determinism.test.ts`: P-VIEW-1 (it imports every helper).
 - **Example tests**, next to their sources, with no DOM and no WebGL:
@@ -824,6 +920,7 @@ No View_Helper throws. No handle function throws to the App. Every expected faul
   - `camera-path.test.ts`: 09.7 (two equal neighbours), 09.8 (all equal), 09.5 (two Zones with the same center).
   - `link.test.ts`: one example per failing Link_Condition with its exact path (R-VIEW-17.12).
   - `view-state.test.ts`: 17.5 (preset switch after `finished` gives `idle` and a transition), 17.13 (a new start while a linked playback is `ended` stops it first), 18.5 (one-step Timeline ends one Step_Duration after start), 18.6 (resume after a pause at 0.4 × Step_Duration moves after the remaining 0.6 × Step_Duration).
+  - `scene/view-store.test.ts`: the `onSelect` and `execute` cases listed in the amendment section, part 6 (R-VIEW-03.6, 03.10, 22.1, 22.3, 22.5, 23.10 to 23.12).
   - `core/view/demo/sample-scenario.test.ts`: the Sample_Scenario passes `validateScenario`, the sample settings pass `loadViewSettings` with at least two presets with different poses, and `missingZoneRefs` is empty (R-VIEW-21.2).
   - `scripts/sensors/boundary-rules.test.ts`: the helpers scope rejects `three`, `react`, `@react-three/drei`, `../scene/x.ts`, `./../scene/x.ts`, an `apps/` import (one fixture, proves `appsBan` is in the scope), and `../../model/../view/scene/x.ts` (one fixture) in `core/view/helpers/a.ts`, and accepts `../../model/history.ts` and `./snap.ts` (R-VIEW-01.4, 01.10).
   - `scripts/sensors/repo-rules.test.ts`: allowed packages include the four new ones; the name test covers `core/view/` (R-VIEW-01.6).
@@ -842,9 +939,10 @@ No View_Helper throws. No handle function throws to the App. Every expected faul
   9. The Theme switch button of the demo changes colors and keeps the camera and Selection (R-VIEW-19.6).
   10. DevTools Network panel, with cache disabled and a full reload of the Core_Demo and a walkthrough: every request goes to `https://seimu1207.github.io`; there is no font, CDN, or other foreign request (R-VIEW-03.9, S-VIEW-3).
   11. `?perf` on the Core_Demo: the overlay records frame times for 10 s while the tester orbits and drags; the median must be ≤ 16.7 ms at a 1920 × 1080 View_Host on the Reference_Machine. The value, machine, and Chrome version go into `docs/decision-log.md` (R-VIEW-16.4, D16, D17).
+  12. Amendment 2026-11-16, in Edit mode with connect off: clicking an Edge's line, its arrow head, and the self-loop selects that Edge, draws it in the selection color at double width, shows no gizmo, and the Selection line reads `Selection: edge <id>`; selecting an Edge removes the Node outline (R-VIEW-23.2); clicking where a Node panel is in front of an Edge selects the Node; from Overview, orbit down so the area-b Wall is between the camera and the Edges e4/e5 (n4→n5); a click there selects nothing and clears the Selection (R-VIEW-23.4); dragging from the selected Edge orbits the camera; after a drag that starts on the selected Edge and ends on a floor or Node, the Selection line is unchanged; with Connect on, an Edge click clears the Selection and cancels a pending first Node; `Remove selected edge` removes the Edge and the line reads `Selection: none`; Undo restores the Edge (R-VIEW-22, 23).
 - Tests and PBT run on task completion (`test-on-task-done` hook) and in CI, not on save. Sensors on save are unchanged (type-check, lint, required-sections, schema).
 
-The Core_Demo has, besides one button per preset (R-VIEW-21.4), buttons for walkthrough, Timeline, linked walkthrough, edit mode, gizmo mode, connect, undo, redo, and Theme swap. They use `font-family: CoreViewSans, sans-serif` (D19; the demo page declares the bundled font with an `@font-face` rule pointing to the same asset). They call only handle functions, so the gate can check each requirement through the public interface. They add no feature beyond the handle functions of this spec.
+The Core_Demo has, besides one button per preset (R-VIEW-21.4), buttons for walkthrough, Timeline, linked walkthrough, edit mode, gizmo mode, connect, undo, redo, Theme swap, and `Remove selected edge`, plus the Selection text line (amendment section, part 6). They use `font-family: CoreViewSans, sans-serif` (D19; the demo page declares the bundled font with an `@font-face` rule pointing to the same asset). They call only handle functions, so the gate can check each requirement through the public interface. They add no feature beyond the handle functions of this spec.
 
 ### Traceability
 
@@ -871,6 +969,15 @@ The Core_Demo has, besides one button per preset (R-VIEW-21.4), buttons for walk
 | R-VIEW-19 Theme | `theme-schema.ts`, `neutral-theme.ts` | P-VIEW-8, P-VIEW-11, examples, gate 9 |
 | R-VIEW-20 Determinism | all helpers | P-VIEW-1, P-VIEW-2; reviewer 20.3, 20.4 |
 | R-VIEW-21 Core demo | `core/view/demo/`, `vite.config.ts`, `top-page.ts`, `build-output.ts` | sample test, check:build, gate 1, 2 |
+| R-VIEW-03.6, 03.7 `execute` when stopped or on a message handle | `start-view.tsx` (`guard`, `messageHandle`) | ViewStore example (after `stop`); message handle: `tsc` (the `execute` key is required) and reviewer (it is the shared `noop`) |
+| R-VIEW-03.10 optional Select_Callback | `start-view.tsx`, `view-store.ts` | P-VIEW-14 (initial state), ViewStore examples |
+| R-VIEW-12.7, 13.8, 17.4 `execute` in `view` mode and during playback | `view-store.ts` | ViewStore examples |
+| R-VIEW-12.8, 12.9 Edge click and hidden Node | `view-state.ts`, `connect-ui.ts`, `edge-line.tsx` | P-VIEW-14, gate 12 |
+| R-VIEW-20.5, 20.8 History only through Gestures, undo, redo, `execute`, `setHistory` | `view-state.ts`, `view-store.ts` | P-VIEW-2, ViewStore examples |
+| R-VIEW-22 Selection notification | `view-state.ts` (`selection` event), `view-store.ts` (`flush`, `stop`) | P-VIEW-14, P-VIEW-2 (22.6), ViewStore examples (22.1, 22.5) |
+| R-VIEW-23.1 to 23.9 Edge selection | `view-state.ts`, `edge-line.tsx`, `gizmo.tsx`, `node-panel.tsx` | P-VIEW-14, P-VIEW-2 (23.9), gate 12 (23.1 to 23.5) |
+| R-VIEW-23.10 to 23.12 `execute` | `start-view.tsx`, `view-store.ts` (`execute`, `cancelGesture`), `node-panel.tsx`, `gizmo.tsx` | ViewStore examples, gate 12 |
+| P-VIEW-14 | `view-state.test.ts`, `arbitraries.ts` (`actionSeqArb`) | its own property test |
 | S-VIEW-1 to S-VIEW-7 | all files | see Safety |
 
 ## Safety

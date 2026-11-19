@@ -6,7 +6,8 @@ import type { Scenario } from "../../model/scenario-schema.ts";
 import { createCursor, createTimeline } from "../../model/timeline.ts";
 import type { CameraPose, VisibilityFilter, ViewSettings, ZoneFootprint } from "./settings-schema.ts";
 import type { Theme } from "./theme-schema.ts";
-import type { ViewAction } from "./view-state.ts";
+import { edgeClickAction } from "./connect-ui.ts";
+import type { Selection, ViewAction, ViewState } from "./view-state.ts";
 
 export const finiteArb: fc.Arbitrary<number> = fc.oneof(
   fc.double({ noNaN: true, noDefaultInfinity: true }),
@@ -374,12 +375,34 @@ export function cursorArb(n: fc.Arbitrary<number> = fc.integer({ min: 1, max: 4 
  * 0 to 40 View_Actions for `settings`: ticks, preset switches with known ids, walk and Timeline
  * controls in any state, selection, connect, edit mode, `cameraApplied`, and `modelChanged`.
  */
-export function actionSeqArb(settings: ViewSettings): fc.Arbitrary<ViewAction[]> {
+/** A View_Action, or the pseudo-action `edgeClick`, which `expandSeqAction` turns into the actions the scene dispatches. */
+export type SeqAction = ViewAction | { type: "edgeClick"; id: string };
+
+/** Expands `edgeClick` with `edgeClickAction` (R-VIEW-23.1, 23.8); every other action is returned as is. */
+export function expandSeqAction(a: SeqAction, s: ViewState): ViewAction[] {
+  if (a.type !== "edgeClick") return [a];
+  if (edgeClickAction(s.editMode, s.connect !== null) === "select") {
+    return [{ type: "select", selection: { kind: "edge", id: a.id } }];
+  }
+  // The empty click of `ViewStore.emptyClick`.
+  const empty: ViewAction[] = [{ type: "select", selection: null }];
+  if (s.editMode === "edit" && s.connect !== null) empty.push({ type: "connectClick", id: null });
+  return empty;
+}
+
+export function actionSeqArb(settings: ViewSettings): fc.Arbitrary<SeqAction[]> {
   const ids = ["n1", "n2", "n3", "n4"];
   const idArb = fc.constantFrom(...ids);
   const idListArb = fc.subarray(ids);
   const edgeTypeArb = fc.constantFrom("link", "other");
-  const action: fc.Arbitrary<ViewAction> = fc.oneof(
+  const edgeIds = ["e1", "e2", "e3"];
+  const edgeIdArb = fc.constantFrom(...edgeIds);
+  const selectionArb: fc.Arbitrary<Selection> = fc.oneof(
+    fc.constant(null),
+    idArb.map((id): Selection => ({ kind: "node", id })),
+    edgeIdArb.map((id): Selection => ({ kind: "edge", id })),
+  );
+  const action: fc.Arbitrary<SeqAction> = fc.oneof(
     { arbitrary: fc.double({ min: 0, max: 0.3, noNaN: true }).map((dt): ViewAction => ({ type: "tick", dt })), weight: 8 },
     fc
       .tuple(fc.constantFrom(...settings.presets), poseArb)
@@ -395,7 +418,8 @@ export function actionSeqArb(settings: ViewSettings): fc.Arbitrary<ViewAction[]>
     poseArb.map((presetPose): ViewAction => ({ type: "walkStop", presetPose })),
     cursorArb().map((cursor): ViewAction => ({ type: "timelineStart", cursor })),
     fc.constantFrom<ViewAction>({ type: "timelinePause" }, { type: "timelineResume" }, { type: "timelineStop" }),
-    fc.oneof(idArb, fc.constant(null)).map((id): ViewAction => ({ type: "select", id })),
+    selectionArb.map((selection): ViewAction => ({ type: "select", selection })),
+    edgeIdArb.map((id): SeqAction => ({ type: "edgeClick", id })),
     fc.constantFrom<ViewAction>({ type: "setGizmoMode", mode: "rotate" }, { type: "setGizmoMode", mode: "scale" }),
     edgeTypeArb.map((edgeType): ViewAction => ({ type: "connectOn", edgeType })),
     fc.constant<ViewAction>({ type: "connectOff" }),
@@ -403,8 +427,16 @@ export function actionSeqArb(settings: ViewSettings): fc.Arbitrary<ViewAction[]>
     fc.constantFrom<ViewAction>({ type: "setEditMode", mode: "view" }, { type: "setEditMode", mode: "edit" }),
     fc.constant<ViewAction>({ type: "cameraApplied" }),
     fc
-      .tuple(idListArb, idListArb)
-      .map(([nodeIds, visibleNodeIds]): ViewAction => ({ type: "modelChanged", nodeIds, visibleNodeIds })),
+      .tuple(idListArb, idListArb, fc.subarray(edgeIds), fc.subarray(edgeIds))
+      .map(
+        ([nodeIds, visibleNodeIds, edgeIdList, visibleEdgeIds]): ViewAction => ({
+          type: "modelChanged",
+          nodeIds,
+          visibleNodeIds,
+          edgeIds: edgeIdList,
+          visibleEdgeIds,
+        }),
+      ),
   );
   return fc.array(action, { maxLength: 40 });
 }

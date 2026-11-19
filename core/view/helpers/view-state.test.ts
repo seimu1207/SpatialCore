@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import { poseAt } from "./camera-path.ts";
 import {
   actionSeqArb,
+  type SeqAction,
+  expandSeqAction,
   effectsArb,
   filterArb,
   poseArb,
@@ -25,7 +27,7 @@ import {
   initialViewState,
   orbitAllowed,
   reduceViewState,
-  type ViewAction,
+  type Selection,
   type ViewEvent,
   type ViewState,
   type WalkState,
@@ -382,23 +384,26 @@ describe("Timeline playback", () => {
 });
 
 const editState = (): ViewState => reduceViewState(initialViewState(settings), { type: "setEditMode", mode: "edit" });
+const node = (id: string): Selection => ({ kind: "node", id });
+const edge = (id: string): Selection => ({ kind: "edge", id });
 const dispatch = (s: ViewState, a: Parameters<typeof reduceViewState>[1]): ViewState => reduceViewState(s, a);
 
 describe("selection, Connect_Mode, Edit_Mode, and model changes", () => {
   it("12.7: select(id) is ignored in view mode and while connect is on", () => {
     const view = initialViewState(settings);
-    expect(dispatch(view, { type: "select", id: "n1" }).selection).toBeNull();
-    let s = dispatch(editState(), { type: "select", id: "n1" });
-    expect(s.selection).toBe("n1");
+    expect(dispatch(view, { type: "select", selection: node("n1") }).selection).toBeNull();
+    let s = dispatch(editState(), { type: "select", selection: node("n1") });
+    expect(s.selection).toEqual(node("n1"));
     s = dispatch(s, { type: "connectOn", edgeType: "link" });
-    expect(dispatch(s, { type: "select", id: "n2" }).selection).toBe("n1");
+    expect(dispatch(s, { type: "select", selection: node("n2") }).selection).toEqual(node("n1"));
+    expect(dispatch(s, { type: "select", selection: edge("e1") }).selection).toEqual(node("n1"));
   });
 
   it("12.3: select(null) clears the Selection while connect is on or off", () => {
-    let s = dispatch(editState(), { type: "select", id: "n1" });
-    expect(dispatch(s, { type: "select", id: null }).selection).toBeNull();
+    let s = dispatch(editState(), { type: "select", selection: node("n1") });
+    expect(dispatch(s, { type: "select", selection: null }).selection).toBeNull();
     s = dispatch(s, { type: "connectOn", edgeType: "link" });
-    expect(dispatch(s, { type: "select", id: null }).selection).toBeNull();
+    expect(dispatch(s, { type: "select", selection: null }).selection).toBeNull();
   });
 
   it("setGizmoMode sets the mode", () => {
@@ -450,7 +455,7 @@ describe("selection, Connect_Mode, Edit_Mode, and model changes", () => {
   });
 
   it("setEditMode(view) clears selection and connect.first but keeps connect on", () => {
-    let s = dispatch(editState(), { type: "select", id: "n1" });
+    let s = dispatch(editState(), { type: "select", selection: node("n1") });
     s = dispatch(s, { type: "connectOn", edgeType: "link" });
     s = dispatch(s, { type: "connectClick", id: "a" });
     s = dispatch(s, { type: "setEditMode", mode: "view" });
@@ -459,12 +464,18 @@ describe("selection, Connect_Mode, Edit_Mode, and model changes", () => {
   });
 
   it("12.5, 12.6, 15.7: modelChanged clears a Node that is gone or not visible", () => {
-    let s = dispatch(editState(), { type: "select", id: "n1" });
-    expect(dispatch(s, { type: "modelChanged", nodeIds: ["n1"], visibleNodeIds: ["n1"] }).selection).toBe("n1");
-    expect(dispatch(s, { type: "modelChanged", nodeIds: ["n2"], visibleNodeIds: ["n1"] }).selection).toBeNull();
-    expect(dispatch(s, { type: "modelChanged", nodeIds: ["n1"], visibleNodeIds: [] }).selection).toBeNull();
+    let s = dispatch(editState(), { type: "select", selection: node("n1") });
+    const mc = (nodeIds: string[], visibleNodeIds: string[], edgeIds: string[] = [], visibleEdgeIds: string[] = []) =>
+      ({ type: "modelChanged", nodeIds, visibleNodeIds, edgeIds, visibleEdgeIds }) as const;
+    expect(dispatch(s, mc(["n1"], ["n1"])).selection).toEqual(node("n1"));
+    expect(dispatch(s, mc(["n2"], ["n1"])).selection).toBeNull();
+    expect(dispatch(s, mc(["n1"], [])).selection).toBeNull();
+    const e = dispatch(editState(), { type: "select", selection: edge("e1") });
+    expect(dispatch(e, mc([], [], ["e1"], ["e1"])).selection).toEqual(edge("e1"));
+    expect(dispatch(e, mc(["e1"], ["e1"], [], [])).selection).toBeNull();
+    expect(dispatch(e, mc([], [], ["e1"], [])).selection).toBeNull();
     s = dispatch(dispatch(editState(), { type: "connectOn", edgeType: "link" }), { type: "connectClick", id: "a" });
-    s = dispatch(s, { type: "modelChanged", nodeIds: ["a"], visibleNodeIds: [] });
+    s = dispatch(s, { type: "modelChanged", nodeIds: ["a"], visibleNodeIds: [], edgeIds: [], visibleEdgeIds: [] });
     expect(s.connect).toEqual({ edgeType: "link", first: null });
   });
 });
@@ -474,8 +485,8 @@ describe("view mode and generated action sequences", () => {
     fc.assert(
       fc.property(actionSeqArb(settings), (actions) => {
         let s = initialViewState(settings);
-        for (const a of actions) {
-          s = reduceViewState(s, a);
+        for (const seq of actions) {
+          for (const a of expandSeqAction(seq, s)) s = reduceViewState(s, a);
           if (s.editMode === "view") {
             expect(s.selection).toBeNull();
             expect(s.connect?.first ?? null).toBeNull();
@@ -499,7 +510,7 @@ describe("view mode and generated action sequences", () => {
 // Feature: core-view, Property 12: P-VIEW-12 the View_State_Reducer follows the playback and selection rules
 describe("P-VIEW-12 the View_State_Reducer follows the playback and selection rules", () => {
   /**
-   * **Validates: Requirements 3.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.9, 12.3, 12.5, 12.6, 12.7, 15.2, 15.4, 15.7, 15.8, 17.2, 17.3, 17.5, 17.6, 17.7, 17.9, 17.10, 17.13, 17.14, 17.15, 18.2, 18.3, 18.5, 18.6, 18.8, 18.10**
+   * **Validates: Requirements 3.1, 8.2, 8.3, 8.4, 8.5, 8.7, 8.9, 12.3, 12.5, 12.6, 12.7, 12.8, 12.9, 15.2, 15.4, 15.7, 15.8, 17.2, 17.3, 17.5, 17.6, 17.7, 17.9, 17.10, 17.13, 17.14, 17.15, 18.2, 18.3, 18.5, 18.6, 18.8, 18.10**
    */
   type RefTimeline = { mode: "paced" | "linked"; t: number; last: number };
 
@@ -513,7 +524,7 @@ describe("P-VIEW-12 the View_State_Reducer follows the playback and selection ru
   const nonWalkEvents = (s: ViewState): ViewEvent[] => s.outbox.filter((e) => e.kind !== "walk");
   const near = (q: number): boolean => Math.abs(q - Math.round(q)) < 1e-9;
 
-  function check(cfg: ViewSettings, actions: ViewAction[]): void {
+  function check(cfg: ViewSettings, actions: SeqAction[]): void {
     let s = initialViewState(cfg);
     expect(cameraFor(s)).toEqual(cfg.presets[0].pose);
 
@@ -527,7 +538,7 @@ describe("P-VIEW-12 the View_State_Reducer follows the playback and selection ru
     let refTl: RefTimeline | null = null;
     let afterStop: CameraPose | null = null;
 
-    for (const a of actions) {
+    for (const seq of actions) for (const a of expandSeqAction(seq, s)) {
       const prev = s;
       s = reduceViewState(prev, a);
       const cleared = { ...prev, outbox: [] };
@@ -537,7 +548,9 @@ describe("P-VIEW-12 the View_State_Reducer follows the playback and selection ru
         expect(s.outbox.filter((e) => e.kind === "walk" || e.kind === "timelineEnd")).toEqual([]);
       }
       if (a.type !== "walkStart" && a.type !== "timelineStart") {
-        if (a.type !== "tick") expect(nonWalkEvents(s).filter((e) => e.kind !== "connect")).toEqual([]);
+        if (a.type !== "tick") {
+          expect(nonWalkEvents(s).filter((e) => e.kind !== "connect" && e.kind !== "selection")).toEqual([]);
+        }
       }
 
       // Walk: progress rules.
@@ -673,11 +686,15 @@ describe("P-VIEW-12 the View_State_Reducer follows the playback and selection ru
         expect(s.selection).toBeNull();
         expect(s.connect?.first ?? null).toBeNull();
       }
-      if (a.type === "select" && a.id === null) expect(s.selection).toBeNull();
+      if (a.type === "select" && a.selection === null) expect(s.selection).toBeNull();
       if (a.type === "modelChanged") {
-        if (s.selection !== null) {
-          expect(a.nodeIds).toContain(s.selection);
-          expect(a.visibleNodeIds).toContain(s.selection);
+        if (s.selection?.kind === "node") {
+          expect(a.nodeIds).toContain(s.selection.id);
+          expect(a.visibleNodeIds).toContain(s.selection.id);
+        }
+        if (s.selection?.kind === "edge") {
+          expect(a.edgeIds).toContain(s.selection.id);
+          expect(a.visibleEdgeIds).toContain(s.selection.id);
         }
         const first = s.connect?.first ?? null;
         if (first !== null) {
@@ -713,10 +730,120 @@ describe("P-VIEW-12 the View_State_Reducer follows the playback and selection ru
   });
 });
 
+// Feature: core-view, Property 14: Edge selection and Selection notification
+describe("P-VIEW-14 Edge selection and Selection notification", () => {
+  /**
+   * **Validates: Requirements 3.10, 12.5, 12.8, 12.9, 22.1, 22.2, 22.3, 22.4, 23.1, 23.6, 23.7, 23.8**
+   */
+  const cfgArb = fc
+    .record({
+      stepDuration: fc.constantFrom(0.25, 1),
+      editMode: fc.constantFrom<"view" | "edit">("view", "edit"),
+    })
+    .map((o): ViewSettings => ({ ...settings, ...o }));
+
+  // Equality written here on purpose; it does not use the implementation's own check.
+  const sameSel = (a: Selection, b: Selection): boolean =>
+    a === null || b === null ? a === b : a.kind === b.kind && a.id === b.id;
+
+  function check(cfg: ViewSettings, actions: SeqAction[]): void {
+    let s = initialViewState(cfg);
+    expect(s.selection).toBeNull();
+    expect(s.outbox).toEqual([]);
+
+    for (const seq of actions) {
+      const clickConnectOn = seq.type === "edgeClick" && s.connect !== null;
+      const clickSelects = seq.type === "edgeClick" && s.editMode === "edit" && s.connect === null;
+      for (const a of expandSeqAction(seq, s)) {
+        const prev = s;
+        s = reduceViewState(prev, a);
+
+        const sel = s.selection;
+        if (sel !== null) {
+          expect(Object.keys(sel).sort()).toEqual(["id", "kind"]);
+          expect(sel.kind === "node" || sel.kind === "edge").toBe(true);
+          expect(typeof sel.id).toBe("string");
+        }
+
+        // An Edge becomes selected only by a select of that Edge in edit mode with connect off.
+        if (sel !== null && sel.kind === "edge" && !sameSel(prev.selection, sel)) {
+          expect(a.type).toBe("select");
+          if (a.type === "select") expect(sameSel(a.selection, sel)).toBe(true);
+          expect(prev.editMode).toBe("edit");
+          expect(prev.connect).toBeNull();
+        }
+        // A raw select of an Edge in view mode or with connect on leaves the Selection unchanged.
+        if (
+          seq.type === "select" &&
+          a.type === "select" &&
+          a.selection !== null &&
+          a.selection.kind === "edge" &&
+          (prev.editMode === "view" || prev.connect !== null)
+        ) {
+          expect(sameSel(s.selection, prev.selection)).toBe(true);
+        }
+        // A raw select of an Edge in edit mode with connect off selects it.
+        if (
+          seq.type === "select" &&
+          a.type === "select" &&
+          a.selection !== null &&
+          a.selection.kind === "edge" &&
+          prev.editMode === "edit" &&
+          prev.connect === null
+        ) {
+          expect(sameSel(s.selection, a.selection)).toBe(true);
+        }
+
+        if (a.type === "modelChanged") {
+          const was = prev.selection;
+          if (was !== null && was.kind === "edge") {
+            const keep = a.edgeIds.includes(was.id) && a.visibleEdgeIds.includes(was.id);
+            expect(sameSel(s.selection, keep ? was : null)).toBe(true);
+          }
+          if (was !== null && was.kind === "node") {
+            const keep = a.nodeIds.includes(was.id) && a.visibleNodeIds.includes(was.id);
+            expect(sameSel(s.selection, keep ? was : null)).toBe(true);
+          }
+        }
+        if (a.type === "setEditMode" && a.mode === "view") expect(s.selection).toBeNull();
+
+        const selEvents = s.outbox.filter((e) => e.kind === "selection");
+        if (sameSel(prev.selection, s.selection)) {
+          expect(selEvents).toEqual([]);
+        } else {
+          expect(selEvents).toHaveLength(1);
+          const ev = selEvents[0];
+          if (ev.kind === "selection") expect(jsonEqual(ev.selection, s.selection)).toBe(true);
+        }
+      }
+      if (seq.type === "edgeClick") {
+        if (clickConnectOn) {
+          expect(s.selection).toBeNull();
+          expect(s.connect?.first ?? null).toBeNull();
+        } else if (!clickSelects) {
+          expect(s.selection).toBeNull();
+        } else {
+          expect(sameSel(s.selection, { kind: "edge", id: seq.id })).toBe(true);
+        }
+      }
+    }
+  }
+
+  it("holds after every action of a generated sequence", () => {
+    fc.assert(
+      fc.property(
+        cfgArb.chain((cfg) => fc.tuple(fc.constant(cfg), actionSeqArb(cfg))),
+        ([cfg, actions]) => check(cfg, actions),
+      ),
+      { numRuns: 300 },
+    );
+  });
+});
+
 // Feature: core-view, Property 2: P-VIEW-2 the view never changes the model
 describe("P-VIEW-2 the view never changes the model", () => {
   /**
-   * **Validates: Requirements 1.8, 1.9, 8.10, 8.11, 20.5**
+   * **Validates: Requirements 1.8, 1.9, 8.10, 8.11, 20.5, 20.8, 22.6, 23.9**
    */
   const hasHistoryFields = (value: unknown): boolean => {
     if (typeof value !== "object" || value === null) return false;
@@ -751,9 +878,11 @@ describe("P-VIEW-2 the view never changes the model", () => {
         const footprintIds = new Set(cfg.zoneFootprints.map((f) => f.id));
         let s = initialViewState(cfg);
         expect(hasHistoryFields(s)).toBe(false);
-        for (const a of actions) {
-          s = reduceViewState(s, a);
-          expect(hasHistoryFields(s)).toBe(false);
+        for (const seq of actions) {
+          for (const x of expandSeqAction(seq, s)) {
+            s = reduceViewState(s, x);
+            expect(hasHistoryFields(s)).toBe(false);
+          }
           const visible = computeVisibleSet(h.present, filter);
           poseAt(waypoints, progress);
           showsDetail({ x: progress, y: 0, z: 0 }, { x: 0, y: 0, z: 0 }, cfg.detailDistance);

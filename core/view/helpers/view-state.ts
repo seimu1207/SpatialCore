@@ -15,6 +15,9 @@ export type TimelinePlayback = {
   sinceMove: number;
 };
 
+/** The selected Node or Edge; a Node and an Edge are never selected together (R-VIEW-23.1). */
+export type Selection = { kind: "node" | "edge"; id: string } | null;
+
 export type ViewState = {
   activePresetId: string;
   /** The preset whose Visibility_Filter is applied. */
@@ -30,7 +33,7 @@ export type ViewState = {
     reported: WalkState;
   };
   timeline: TimelinePlayback | null;
-  selection: string | null;
+  selection: Selection;
   gizmoMode: "rotate" | "scale";
   connect: { edgeType: string; first: string | null } | null;
   editMode: "view" | "edit";
@@ -45,7 +48,8 @@ export type ViewEvent =
   | { kind: "walk"; state: WalkState; progress: number }
   | { kind: "timelinePosition"; position: number }
   | { kind: "timelineEnd" }
-  | { kind: "connect"; from: string; to: string; edgeType: string };
+  | { kind: "connect"; from: string; to: string; edgeType: string }
+  | { kind: "selection"; selection: Selection };
 
 export type ViewAction =
   | { type: "setPreset"; id: string; pose: CameraPose; from: CameraPose }
@@ -58,13 +62,19 @@ export type ViewAction =
   | { type: "timelinePause" }
   | { type: "timelineResume" }
   | { type: "timelineStop" }
-  | { type: "select"; id: string | null }
+  | { type: "select"; selection: Selection }
   | { type: "setGizmoMode"; mode: "rotate" | "scale" }
   | { type: "connectOn"; edgeType: string }
   | { type: "connectOff" }
   | { type: "connectClick"; id: string | null }
   | { type: "setEditMode"; mode: "view" | "edit" }
-  | { type: "modelChanged"; nodeIds: string[]; visibleNodeIds: string[] }
+  | {
+      type: "modelChanged";
+      nodeIds: string[];
+      visibleNodeIds: string[];
+      edgeIds: string[];
+      visibleEdgeIds: string[];
+    }
   | { type: "cameraApplied" };
 
 function copyPose(p: CameraPose): CameraPose {
@@ -318,11 +328,22 @@ function timelineSetStatus(
   return { ...state, timeline: { ...tl, status: to }, outbox: [] };
 }
 
-/** `select(null)` clears in every state; an id is ignored in `view` mode or while connect is on. */
-function select(state: ViewState, id: string | null): ViewState {
-  if (id === null) return { ...state, selection: null, outbox: [] };
-  if (state.editMode !== "edit" || state.connect !== null) return { ...state, outbox: [] };
-  return { ...state, selection: id, outbox: [] };
+/** True when both Selections are `null` or have the same `kind` and `id`. */
+function sameSelection(a: Selection, b: Selection): boolean {
+  if (a === null || b === null) return a === b;
+  return a.kind === b.kind && a.id === b.id;
+}
+
+/**
+ * `select(null)` clears in every state; a Node or Edge Selection is ignored in `view` mode or while connect is on.
+ * An unchanged Selection returns the same state object (with an empty outbox, as for every non-tick action).
+ */
+function select(state: ViewState, selection: Selection): ViewState {
+  if (selection !== null && (state.editMode !== "edit" || state.connect !== null)) {
+    return { ...state, outbox: [] };
+  }
+  if (sameSelection(state.selection, selection)) return state.outbox.length === 0 ? state : { ...state, outbox: [] };
+  return { ...state, selection: selection === null ? null : { kind: selection.kind, id: selection.id }, outbox: [] };
 }
 
 /** R-VIEW-15.2: turning connect on again cancels a pending connection and uses the new type. */
@@ -359,25 +380,31 @@ function setEditMode(state: ViewState, mode: "view" | "edit"): ViewState {
 
 function modelChanged(
   state: ViewState,
-  nodeIds: readonly string[],
-  visibleNodeIds: readonly string[],
+  action: Extract<ViewAction, { type: "modelChanged" }>,
 ): ViewState {
-  const present = new Set(nodeIds);
-  const visible = new Set(visibleNodeIds);
+  const present = new Set(action.nodeIds);
+  const visible = new Set(action.visibleNodeIds);
   const alive = (id: string | null): boolean => id !== null && present.has(id) && visible.has(id);
+  const sel = state.selection;
+  const selAlive =
+    sel === null
+      ? false
+      : sel.kind === "node"
+        ? alive(sel.id)
+        : action.edgeIds.includes(sel.id) && action.visibleEdgeIds.includes(sel.id);
   const connect =
     state.connect !== null && state.connect.first !== null && !alive(state.connect.first)
       ? { ...state.connect, first: null }
       : state.connect;
   return {
     ...state,
-    selection: alive(state.selection) ? state.selection : null,
+    selection: selAlive ? state.selection : null,
     connect,
     outbox: [],
   };
 }
 
-export function reduceViewState(state: ViewState, action: ViewAction): ViewState {
+function reduceInner(state: ViewState, action: ViewAction): ViewState {
   switch (action.type) {
     case "setPreset":
       return setPreset(state, action);
@@ -400,7 +427,7 @@ export function reduceViewState(state: ViewState, action: ViewAction): ViewState
     case "timelineStop":
       return { ...state, timeline: null, outbox: [] };
     case "select":
-      return select(state, action.id);
+      return select(state, action.selection);
     case "setGizmoMode":
       return { ...state, gizmoMode: action.mode, outbox: [] };
     case "connectOn":
@@ -412,13 +439,20 @@ export function reduceViewState(state: ViewState, action: ViewAction): ViewState
     case "setEditMode":
       return setEditMode(state, action.mode);
     case "modelChanged":
-      return modelChanged(state, action.nodeIds, action.visibleNodeIds);
+      return modelChanged(state, action);
     case "cameraApplied":
       return { ...state, cameraOnce: null, outbox: [] };
     default:
       return { ...state, outbox: [] };
   }
 }
+/** One place appends a `selection` event for every change or clear of the Selection (R-VIEW-22.2 to 22.4). */
+export function reduceViewState(state: ViewState, action: ViewAction): ViewState {
+  const next = reduceInner(state, action);
+  if (sameSelection(state.selection, next.selection)) return next;
+  return { ...next, outbox: [...next.outbox, { kind: "selection", selection: next.selection }] };
+}
+
 /** The pose the frame driver sets this frame, or `null` when the user controls the camera. */
 export function cameraFor(state: ViewState): CameraPose | null {
   const tr = state.transition;

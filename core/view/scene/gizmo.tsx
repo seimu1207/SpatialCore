@@ -49,10 +49,9 @@ function writePose(obj: Group, node: Node): void {
  */
 export function Gizmo({ store, snapshot }: { store: ViewStore; snapshot: ViewSnapshot }): React.JSX.Element | null {
   const { view, history } = snapshot;
+  const sel = view.selection;
   const node =
-    view.editMode === "edit" && view.selection !== null
-      ? history.present.nodes.find((n) => n.id === view.selection)
-      : undefined;
+    view.editMode === "edit" && sel?.kind === "node" ? history.present.nodes.find((n) => n.id === sel.id) : undefined;
   if (node === undefined) return null;
   return <GizmoFor key={node.id} node={node} mode={view.gizmoMode} store={store} />;
 }
@@ -104,7 +103,7 @@ function GizmoFor({
     start.current = null;
     if (st !== null && c !== null && proxy !== null) {
       const current = stored();
-      if (command && current !== undefined && st.axes.length > 0) {
+      if (command && store.gestureActive && current !== undefined && st.axes.length > 0) {
         const cmd =
           st.mode === "rotate"
             ? rotateCommand(current, st.axes[0], rotationDelta(c, st.axes[0]))
@@ -151,7 +150,7 @@ function GizmoFor({
           onObjectChange={() => {
             const st = start.current;
             const c = controlsRef.current;
-            if (st === null || c === null || st.axes.length === 0) return;
+            if (st === null || c === null || st.axes.length === 0 || !store.gestureActive) return;
             const current = stored();
             if (current === undefined) return;
             const pose =

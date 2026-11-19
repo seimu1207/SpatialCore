@@ -878,6 +878,16 @@
         "executionId": "137d2bfb-6210-48d1-ba6f-30d8e1a914e9",
         "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
         "timestamp": 1794924979984
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090222119
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090229976
       }
     ],
     "10.2 Gizmo rotation and scaling": [
@@ -1094,6 +1104,125 @@
         "executionId": "35dbaf5e-e7b9-49d7-948d-d729133a2c91",
         "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
         "timestamp": 1794923885383
+      }
+    ],
+    "16.1 Selection type, reducer, `edgeClickAction`, and all call-site updates": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090222436
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090260158
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090882580
+      }
+    ],
+    "16.2 P-VIEW-14 property test and P-VIEW-2 extension": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090222707
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090896470
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092068169
+      }
+    ],
+    "16.3 ViewStore `onSelect`, `cancelGesture`, and `execute` on the handle": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090222963
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090896836
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092069093
+      }
+    ],
+    "16.4 Scene: Edge hit line, highlight, and click-distance rule": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090223241
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092084484
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092470090
+      },
+      {
+        "executionId": "fcc6ef9f-69a2-4fb7-be1d-852b3695ce75",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795093184668
+      },
+      {
+        "executionId": "fcc6ef9f-69a2-4fb7-be1d-852b3695ce75",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795093313036
+      }
+    ],
+    "16.5 Core_Demo: Selection line and Remove selected edge": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090223473
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092482572
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092656264
+      }
+    ],
+    "16.6 Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090223700
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092656540
+      },
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795092906359
+      }
+    ],
+    "16.7 Verification gate for the amendment (human approves; the agent must not mark this done)": [
+      {
+        "executionId": "85b1cf23-fb4f-40b8-b57a-4d4203e68cea",
+        "chatSessionId": "sess_cdc3375d-1827-4f8d-86e7-34ab4cf3709e",
+        "timestamp": 1795090223922
       }
     ]
   }

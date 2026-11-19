@@ -75,7 +75,7 @@ export function ViewRoot({ store, images }: { store: ViewStore; images: ImageCac
         shadows={false}
         gl={{ powerPreference: "high-performance" }}
         onPointerMissed={() => {
-          // Empty space and Edges (no handlers) arrive here; floors and Walls call the same method (R-VIEW-12.3).
+          // Empty space arrives here; floors, Walls, and Edges call the same method (R-VIEW-12.3, 23.1).
           store.emptyClick();
         }}
         camera={{ position: [pose.position.x, pose.position.y, pose.position.z], fov: 50, near: 0.05, far: 500 }}
@@ -85,7 +85,7 @@ export function ViewRoot({ store, images }: { store: ViewStore; images: ImageCac
         <directionalLight position={[5, 10, 7]} intensity={1.5} />
         <ZoneLayer snapshot={snap} store={store} />
         <NodePanels snapshot={snap} images={images} store={store} />
-        <EdgeLines snapshot={snap} poses={snap.preview} />
+        <EdgeLines snapshot={snap} poses={snap.preview} store={store} />
         <FogVolumes snapshot={snap} poses={snap.preview} />
         <Gizmo store={store} snapshot={snap} />
         <CameraRig store={store} />

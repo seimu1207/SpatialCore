@@ -7,7 +7,7 @@ import type { Scenario } from "../../model/scenario-schema.ts";
 import { loadViewSettings, type ViewSettings } from "../helpers/settings-schema.ts";
 import { loadTheme } from "../helpers/theme-schema.ts";
 import { NEUTRAL_THEME } from "../helpers/neutral-theme.ts";
-import { initialViewState } from "../helpers/view-state.ts";
+import { initialViewState, type Selection, type ViewAction } from "../helpers/view-state.ts";
 import { ViewStore, type EditReport, type TimelineReport } from "./view-store.ts";
 
 const label = { en: "x", ja: "x" };
@@ -147,8 +147,8 @@ describe("ViewStore edits", () => {
 
   it("a removed Node clears the Selection through modelChanged", () => {
     const { store } = setup();
-    store.dispatch({ type: "select", id: "n1" });
-    expect(store.getSnapshot().view.selection).toBe("n1");
+    store.dispatch({ type: "select", selection: { kind: "node", id: "n1" } });
+    expect(store.getSnapshot().view.selection).toEqual({ kind: "node", id: "n1" });
     store.execute({ kind: "removeNode", id: "n1" });
     expect(store.getSnapshot().view.selection).toBeNull();
   });
@@ -399,5 +399,163 @@ describe("ViewStore stop drops pending Timeline events", () => {
     store.stopTimeline();
     store.flush();
     expect(tls).toHaveLength(1);
+  });
+});
+
+function setupSelect(withEdge = false, withOnSelect = true) {
+  const picks: Selection[] = [];
+  const edits: EditReport[] = [];
+  const theme = loadTheme(NEUTRAL_THEME);
+  if (!theme.ok) throw new Error("bad theme");
+  const s = settings();
+  const h = createHistory(
+    withEdge ? { ...scenario, edges: [{ id: "e1", from: "n1", to: "n2", type: "link" }] } : scenario,
+  );
+  if (!h.ok) throw new Error("bad fixture");
+  const store = new ViewStore({
+    history: h.history,
+    settings: s,
+    theme: theme.theme,
+    view: initialViewState(s),
+    onEdit: (r) => edits.push(r),
+    onWalk: () => undefined,
+    onTimeline: () => undefined,
+    ...(withOnSelect ? { onSelect: (sel: Selection) => picks.push(sel) } : {}),
+  });
+  return { store, picks, edits };
+}
+
+const nodeSel = (id: string): ViewAction => ({ type: "select", selection: { kind: "node", id } });
+
+describe("ViewStore onSelect (R-VIEW-22)", () => {
+  it("is not called at start or on flush with nothing changed (22.1)", () => {
+    const { store, picks } = setupSelect();
+    store.flush();
+    expect(picks).toEqual([]);
+  });
+
+  it("is called once per change after flush, with a copy (22.2)", () => {
+    const { store, picks } = setupSelect();
+    store.dispatch(nodeSel("n1"));
+    expect(picks).toEqual([]);
+    store.flush();
+    expect(picks).toEqual([{ kind: "node", id: "n1" }]);
+    expect(picks[0]).not.toBe(store.getSnapshot().view.selection);
+    store.dispatch(nodeSel("n2"));
+    store.emptyClick();
+    store.flush();
+    expect(picks).toEqual([{ kind: "node", id: "n1" }, { kind: "node", id: "n2" }, null]);
+  });
+
+  it("is not called again for a repeated select of the same Node (22.3)", () => {
+    const { store, picks } = setupSelect();
+    store.dispatch(nodeSel("n1"));
+    store.flush();
+    store.dispatch(nodeSel("n1"));
+    store.flush();
+    expect(picks).toHaveLength(1);
+  });
+
+  it("is not called after stop even with an event pending (22.5)", () => {
+    const { store, picks } = setupSelect();
+    store.dispatch(nodeSel("n1"));
+    store.stop();
+    store.flush();
+    expect(picks).toEqual([]);
+  });
+
+  it("a store with no onSelect works (3.10)", () => {
+    const { store } = setupSelect(false, false);
+    store.dispatch(nodeSel("n1"));
+    store.flush();
+    expect(store.getSnapshot().view.selection).toEqual({ kind: "node", id: "n1" });
+  });
+
+  it("a ViewPreset that hides the selected Edge clears it with one onSelect(null) (23.6, 22.4)", () => {
+    const { store, picks } = setupSelect(true);
+    store.dispatch({ type: "select", selection: { kind: "edge", id: "e1" } });
+    store.flush();
+    expect(picks).toEqual([{ kind: "edge", id: "e1" }]);
+    store.setPreset("p2");
+    store.dispatch({ type: "tick", dt: 0.6 });
+    store.flush();
+    expect(store.getSnapshot().view.selection).toBeNull();
+    expect(picks).toEqual([{ kind: "edge", id: "e1" }, null]);
+  });
+});
+
+describe("ViewStore cancelGesture and execute (R-VIEW-23.10 to 23.12)", () => {
+  it("cancelGesture clears preview, gestureActive, and a pending first Node (23.12)", () => {
+    const { store } = setupSelect();
+    store.connectOn("link");
+    store.dispatch({ type: "connectClick", id: "n1" });
+    store.setGestureActive(true);
+    store.setPreview(new Map([["n1", { position: { x: 9, y: 0, z: 0 } }]]));
+    store.cancelGesture();
+    expect(store.gestureActive).toBe(false);
+    expect(store.getSnapshot().preview.size).toBe(0);
+    expect(store.getSnapshot().view.connect).toEqual({ edgeType: "link", first: null });
+  });
+
+  it("cancelGesture with no Gesture changes nothing", () => {
+    const { store } = setupSelect();
+    const snap = store.getSnapshot();
+    store.cancelGesture();
+    expect(store.getSnapshot()).toBe(snap);
+  });
+
+  it("execute after cancelGesture applies the command once (23.10, 23.12)", () => {
+    const { store, edits } = setupSelect();
+    store.setGestureActive(true);
+    store.setPreview(new Map([["n1", { position: { x: 9, y: 0, z: 0 } }]]));
+    store.cancelGesture();
+    store.execute(move);
+    expect(store.getSnapshot().history.past).toHaveLength(1);
+    expect(store.getSnapshot().history.present.nodes[0].position.x).toBe(5);
+    expect(edits).toHaveLength(1);
+    expect(edits[0].kind).toBe("history");
+  });
+
+  it("a rejected command keeps the History and the Selection (23.11)", () => {
+    const { store, edits } = setupSelect(true);
+    store.dispatch({ type: "select", selection: { kind: "edge", id: "e1" } });
+    const before = store.getSnapshot().history;
+    store.execute({ kind: "removeNode", id: "missing" });
+    expect(store.getSnapshot().history).toBe(before);
+    expect(store.getSnapshot().view.selection).toEqual({ kind: "edge", id: "e1" });
+    expect(edits).toHaveLength(1);
+    expect(edits[0]).toMatchObject({ kind: "errors", context: "edit" });
+  });
+
+  it("a removed selected Edge clears the Selection (23.6)", () => {
+    const { store } = setupSelect(true);
+    store.dispatch({ type: "select", selection: { kind: "edge", id: "e1" } });
+    store.execute({ kind: "removeEdge", id: "e1" });
+    expect(store.getSnapshot().view.selection).toBeNull();
+  });
+
+  it("works in view mode and leaves a playing walk and the Timeline unchanged (12.7, 13.8, 17.4, 20.5)", () => {
+    const { store } = setupSelect();
+    store.setEditMode("view");
+    store.startWalk("wp", 2);
+    const view = store.getSnapshot().view;
+    expect(view.walk.state).toBe("playing");
+    store.execute(move);
+    const after = store.getSnapshot().view;
+    expect(store.getSnapshot().history.present.nodes[0].position.x).toBe(5);
+    expect(after.walk).toEqual(view.walk);
+    expect(after.timeline).toEqual(view.timeline);
+    expect(after.editMode).toBe("view");
+  });
+
+  it("after stop execute changes nothing and calls no callback (3.6)", () => {
+    const { store, edits, picks } = setupSelect();
+    store.stop();
+    const snap = store.getSnapshot();
+    store.cancelGesture();
+    store.execute(move);
+    expect(store.getSnapshot()).toBe(snap);
+    expect(edits).toEqual([]);
+    expect(picks).toEqual([]);
   });
 });

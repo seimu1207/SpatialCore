@@ -34,8 +34,8 @@ type PanelProps = {
   editMode: "view" | "edit";
 };
 
-/** Outline color of the selected Node. */
-const SELECTION_COLOR = "#ffd400";
+/** Highlight color of the selected Node (outline) or Edge (line and arrow). */
+export const SELECTION_COLOR = "#ffd400";
 
 /** The Detail_Layer plane under the panel, shown only while the camera is within the Detail_Distance. */
 function DetailLayer({
@@ -98,7 +98,8 @@ function useNodeGesture(node: Node, store: ViewStore, selected: boolean, editMod
     const p = press.current;
     if (p === null) return;
     press.current = null;
-    if (commit && p.dragging && p.last !== null) {
+    // A cancelled Gesture (`store.cancelGesture`) clears the flag; its drag then commits nothing (R-VIEW-23.12).
+    if (commit && store.gestureActive && p.dragging && p.last !== null) {
       const current = store.getSnapshot().history.present.nodes.find((n) => n.id === id);
       const command = current === undefined ? null : dragCommand(current, p.last);
       if (command !== null) store.execute(command);
@@ -111,10 +112,12 @@ function useNodeGesture(node: Node, store: ViewStore, selected: boolean, editMod
   return {
     onClick: (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
+      // R3F `delta` is the rounded pointer travel in canvas CSS px between the last pointerdown and the click.
+      if (e.delta > 5) return;
       // Only visible Nodes have a panel, so a hidden Node can never reach here (R-VIEW-15.8).
       const action = nodeClickAction(editMode, store.getSnapshot().view.connect !== null);
       if (action === "connect") store.dispatch({ type: "connectClick", id });
-      else if (action === "select") store.dispatch({ type: "select", id });
+      else if (action === "select") store.dispatch({ type: "select", selection: { kind: "node", id } });
     },
     onPointerDown: (e: ThreeEvent<PointerEvent>) => {
       e.stopPropagation();
@@ -135,6 +138,10 @@ function useNodeGesture(node: Node, store: ViewStore, selected: boolean, editMod
     onPointerMove: (e: ThreeEvent<PointerEvent>) => {
       const p = press.current;
       if (p === null) return;
+      if (!store.gestureActive) {
+        press.current = null;
+        return;
+      }
       const now = { x: e.nativeEvent.clientX, y: e.nativeEvent.clientY };
       if (!p.dragging) {
         if (!exceedsDragThreshold(p.start, now)) return;
@@ -231,15 +238,15 @@ const NodePanel = memo(function NodePanel({
         />
       )}
       <mesh
-      position={[node.position.x, node.position.y, node.position.z]}
-      rotation={[node.rotation.x, node.rotation.y, node.rotation.z, "XYZ"]}
-      scale={[BASE_WIDTH * node.scale.x, BASE_HEIGHT * node.scale.y, BASE_THICKNESS * node.scale.z]}
-      userData={{ nodeId: node.id }}
-      geometry={PANEL_BOX}
-      material={materials}
-      {...handlers}
-    >
-      {selected && editMode === "edit" ? <Edges color={SELECTION_COLOR} /> : null}
+        position={[node.position.x, node.position.y, node.position.z]}
+        rotation={[node.rotation.x, node.rotation.y, node.rotation.z, "XYZ"]}
+        scale={[BASE_WIDTH * node.scale.x, BASE_HEIGHT * node.scale.y, BASE_THICKNESS * node.scale.z]}
+        userData={{ nodeId: node.id }}
+        geometry={PANEL_BOX}
+        material={materials}
+        {...handlers}
+      >
+        {selected && editMode === "edit" ? <Edges color={SELECTION_COLOR} /> : null}
       </mesh>
     </>
   );
@@ -314,7 +321,7 @@ export const NodePanels = memo(function NodePanels({ snapshot, images, store }: 
             imageVersion={imageVersion}
             detailDistance={settings.detailDistance}
             store={store}
-            selected={view.selection === stored.id}
+            selected={view.selection?.kind === "node" && view.selection.id === stored.id}
             editMode={view.editMode}
           />
         );

@@ -7,7 +7,8 @@ import type { EffectRequest, Timeline } from "../../model/rule-schema.ts";
 import { NEUTRAL_THEME } from "../helpers/neutral-theme.ts";
 import { FONT_FAMILY } from "../scene/font.ts";
 import { startCoreView } from "../start-view.tsx";
-import type { CoreViewHandle, ImageResolver } from "../start-view.tsx";
+import type { CoreViewHandle, ImageResolver, Selection } from "../start-view.tsx";
+import { removeSelectedEdgeCommand, selectionLabel } from "./selection-line.ts";
 import { buildPerfScenario, buildPerfSettings } from "./perf-scenario.ts";
 import { startPerfOverlay } from "./perf-overlay.ts";
 import perf01 from "./images/perf-01.svg?url";
@@ -44,6 +45,9 @@ const imageUrls: Readonly<Record<string, string>> = {
 };
 
 const resolveImage: ImageResolver = (reference) => imageUrls[reference] ?? null;
+
+const selectionLine = document.createElement("span");
+let currentSelection: Selection = null;
 
 function addButton(bar: HTMLElement, label: string, onClick: () => void): void {
   const button = document.createElement("button");
@@ -146,6 +150,14 @@ function addControls(parent: HTMLElement, handle: CoreViewHandle, scenario: Scen
   addButton(bar, "Redo", () => {
     handle.redo();
   });
+  addButton(bar, "Remove selected edge", () => {
+    const command = removeSelectedEdgeCommand(currentSelection);
+    if (command !== null) handle.execute(command);
+  });
+  selectionLine.style.fontFamily = `${FONT_FAMILY}, sans-serif`;
+  selectionLine.style.margin = "0 4px 0 12px";
+  selectionLine.textContent = selectionLabel(currentSelection);
+  bar.append(selectionLine);
 
   addGroup(bar, "Theme");
   addButton(bar, "Sample theme", () => {
@@ -191,6 +203,10 @@ function start(): void {
     },
     onWalk: () => undefined,
     onTimeline: () => undefined,
+    onSelect: (selection) => {
+      currentSelection = selection;
+      selectionLine.textContent = selectionLabel(selection);
+    },
   });
 
   if (perf) {

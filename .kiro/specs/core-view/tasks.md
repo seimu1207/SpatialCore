@@ -8,6 +8,7 @@ Language: TypeScript (design.md uses TypeScript; scene files are TSX). Build ord
 2. Pure View_Helpers with their tests, one helper per task (tasks 3 and 4), then the View_State_Reducer (task 6).
 3. Scene components (task 8), then interaction (task 10).
 4. The Core_Demo content (task 12), decision records (task 13), and the verification gate (task 15).
+5. Amendment 2026-11-16 (Edge selection, Select_Callback, `execute`): task 16, after task 15, with its own gate 16.7.
 
 Nothing under `core/view/` is imported by an entry page until task 8.9, which wires a temporary minimal start into the stub demo page so that the first bundle that contains three.js and Fiber is built and scanned by `check:build` early. Task 12.3 replaces that start with the real demo. The top page and the two App pages are never changed except for the one Core_Demo link (task 1.6).
 
@@ -319,7 +320,7 @@ pm run check:build exit 0.
   - Run `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, `npm run check:build`. All exit 0. Ask the user if questions arise.
 
 - [x] 10. Interaction
-  - [ ] 10.1 Selection, drag on the Zone_Plane, and snapping
+  - [x] 10.1 Selection, drag on the Zone_Plane, and snapping
     - `scene/node-panel.tsx`: pointer events with `stopPropagation` after the nearest hit; a click selects (Edit_Mode `edit`, connect off); `onPointerMissed` and hits on floors, Walls, and Edges dispatch `select(null)`; the selected Node gets an outline; no outline in `view` mode. `pointerdown` on the selected Node in `edit` mode sets `gestureActive` at once, with pointer capture; `pointerup`, `pointercancel`, `lostpointercapture` clear it.
     - `scene/drag.ts`: the 5 px press-and-move threshold, the ray-to-Zone_Plane test (plane `y = elevation` of the Node's Zone, or 0), `snap` for the preview position (the last preview is kept when the ray misses), drag preview shown in the same frame with Edges following. On release, `dragCommand` goes to `store.execute` when it is not `null`; a rejected command clears the preview. The Node's `zone` is never changed (R-VIEW-13.9).
     - Design: Gestures and the History (Click and drag).
@@ -378,7 +379,7 @@ pm run check:build exit 0.
 - [x] 14. Checkpoint - Ensure all tests pass
   - Run `npm run typecheck`, `npm run lint`, `npm run check:sections`, `npm run check:schema`, `npm test`, `npm run build`, `npm run check:build`. All exit 0. Ask the user if questions arise.
 
-- [ ] 15. Verification gate (human approves; the agent must not mark this done)
+- [x] 15. Verification gate (human approves; the agent must not mark this done)
   - Scope: this is the last spec of the `core` Unit, so the gate includes the deploy check on the public URL that `core-graph` and `core-rules` deferred.
   - **[Agent]** Run `npm test`, `npm run typecheck`, `npm run lint`, `npm run check:sections`, `npm run check:schema`, `npm run build`, `npm run check:build`; report each result and the test counts (test files, tests passed, how many are property tests, P-VIEW-1 to P-VIEW-13).
   - **[Agent]** Confirm the name test (task 1.5) covers every file under `core/view/` including the demo and fonts, and that `docs/decision-log.md` holds the five lines of tasks 1.1, 1.2, 1.4, 1.5, and 1.6. Report any missing line.
@@ -399,16 +400,76 @@ pm run check:build exit 0.
   - **[Human]** Then approve the spec's result and add one line to `docs/decision-log.md` (date / Unit / what was checked / result). Because this is the last spec of the `core` Unit, the line covers the Unit.
   - _Requirements: 1.3, 1.6, 1.7, 3.9, 16.3, 16.4, 20.3, 20.4, 21.5, 21.7_
 
+- [ ] 16. Amendment: Selection notification and Edge selection
+  - Scope: the approved 2026-11-16 amendment (design.md, "Amendment 2026-11-16: Selection notification and Edge selection", D20, D21). Existing tasks and their `[x]` marks are unchanged, except that 16.1 updates existing code and tests to the new `Selection` type. Each sub-task leaves `tsc`, lint, and the public build green.
+  - [x] 16.1 Selection type, reducer, `edgeClickAction`, and all call-site updates
+    - In `core/view/helpers/view-state.ts`: export `Selection`; `ViewState.selection` becomes `Selection`; `select` takes a `Selection` and is ignored in `view` mode or while connect is on (so an Edge is selected only in `edit` with connect off); `modelChanged` carries `edgeIds` and `visibleEdgeIds` and clears a Node Selection missing from the Node lists or an Edge Selection missing from the Edge lists; `setEditMode("view")` clears either kind; `select` returns the same state object when the Selection is unchanged in `kind` and `id`; wrap the reducer so a changed Selection appends one `selection` outbox event (`sameSelection`), and `initialViewState` emits none.
+    - `helpers/connect-ui.ts`: add `edgeClickAction(editMode, connectOn): "select" | "empty"`, `"select"` only for `edit` with connect off. Example tests in `connect-ui.test.ts` for all four input combinations.
+    - `helpers/arbitraries.ts`: extend `actionSeqArb` with `select` drawing `null`, `{ kind: "node", id }` (`n1`–`n4`), and `{ kind: "edge", id }` (`e1`–`e3`); `modelChanged` with `edgeIds` and `visibleEdgeIds` from `fc.subarray(["e1", "e2", "e3"])`; and the pseudo-action `edgeClick(id)`, expanded with the real `edgeClickAction`. Update every existing property test that folds actions (P-VIEW-1, P-VIEW-2, P-VIEW-12) to expand `edgeClick` with `edgeClickAction`, and change the Selection check of P-VIEW-12 to "a Node Selection is in both Node lists, an Edge Selection in both Edge lists".
+    - Update every call site of the old Selection and `select` shapes so `tsc`, lint, and the build stay green: `scene/view-store.ts` (`emptyClick` dispatches `select` with `selection: null`; `modelChangedAction()` gains `edgeIds` and `visibleEdgeIds`), `scene/gizmo.tsx` (Selection comparison), `scene/node-panel.tsx` (`selected`; `onClick` dispatches `select({ kind: "node", id })`), the existing cases in `scene/view-store.test.ts` and `helpers/view-state.test.ts` (`{ kind: "node", id }`), and anything else `tsc` reports.
+    - Design: Amendment sections 1, 2, 6 (generator change, P-VIEW-12 update).
+    - _Requirements: 3.10, 12.3, 12.5, 12.7, 12.9, 20.8, 22.1, 22.2, 22.3, 22.4, 23.1, 23.6, 23.7_
+    - Done when: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and `npm run check:build` exit 0.
+
+  - [x] 16.2 P-VIEW-14 property test and P-VIEW-2 extension
+    - In `view-state.test.ts` add its own test, **Property 14: P-VIEW-14 Edge selection and Selection notification**: the name starts with `P-VIEW-14`, `numRuns` ≥ 100, tag comment `// Feature: core-view, Property 14: Edge selection and Selection notification`, and the checks of design.md Property 14 (`edgeClick` expanded with `edgeClickAction`; a raw Edge `select` folded as is). Add generators to `helpers/arbitraries.ts` only if Property 14 needs them.
+    - Extend P-VIEW-2 so action sequences with Edge Selections still change no History and issue no Edit_Command.
+    - **Property 14: P-VIEW-14 Edge selection and Selection notification**
+    - **Validates: Requirements 12.8, 20.8, 22.2, 22.3, 22.4, 23.1, 23.6, 23.8, 23.9**
+    - Design: Amendment sections 1, 2, 6; Property 14.
+    - _Requirements: 12.8, 20.8, 22.2, 22.3, 22.4, 23.1, 23.6, 23.8, 23.9_
+    - Done when: `npm run typecheck`, `npm run lint`, and `npm test` exit 0.
+
+  - [x] 16.3 ViewStore `onSelect`, `cancelGesture`, and `execute` on the handle
+    - `scene/view-store.ts`: `modelChangedAction()` builds the four lists from one `computeVisibleSet` call (if not already done in 16.1); optional `onSelect` in `ViewStoreInit`, routed in `flush` with a copy of the Selection; `cancelGesture()` (`setPreview(null)`, `setGestureActive(false)`, and `connectClick(null)` when `connect.first` is set); `stop` resets `onSelect` to a no-op.
+    - `start-view.tsx`: `CoreViewOptions.onSelect?`, re-export `Selection` and `SelectCallback`, `CoreViewHandle.execute(command)` as `guard((c) => { store.cancelGesture(); store.execute(c); })`, and `execute: noop` on the message handle.
+    - New example tests in `scene/view-store.test.ts` as listed in design.md Amendment section 6: one `onSelect` call per change after `flush`; none at start; none for a repeated select; none after `stop` with an event pending; a store with no `onSelect` works; preset `p2` hides the selected Edge and gives one `onSelect(null)`; `execute` during a drag clears preview, `gestureActive`, and `connect.first` and applies the command once; a rejected command keeps History and Selection; `execute` in `view` mode and during a `playing` walk leaves `walk` and `timeline` unchanged; `execute` after `stop` changes nothing and calls no callback.
+    - Design: Amendment sections 3, 5, 6; D20.
+    - _Requirements: 3.6, 3.7, 3.10, 12.7, 13.8, 17.4, 20.5, 22.1, 22.2, 22.3, 22.4, 22.5, 23.6, 23.10, 23.11, 23.12_
+    - Done when: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and `npm run check:build` exit 0.
+
+  - [x] 16.4 Scene: Edge hit line, highlight, and click-distance rule
+    - `scene/edge-line.tsx`: one `<group onClick>` around the line and the arrow cone (the label stays outside); a hidden hit `Line` that includes the arrow tip, `worldUnits={false}`, `lineWidth={12}`, `visible={false}` (fallback `material.visible = false` if the hidden line gets no click; note the choice); the handler calls `e.stopPropagation()`, returns when `e.delta > 5`, then `edgeClickAction` gives `select` of the Edge or `store.emptyClick()`; no `onPointerDown`. A selected Edge gets `SELECTION_COLOR` and `lineWidth = 2 * style.width` on the line and the cone. `scene/view-root.tsx`: pass `store` and extend `edgeLinesUnchanged` with `store`, `view.selection`, and `view.editMode`.
+    - `scene/node-panel.tsx`: the Node outline shows only for a Node Selection (none for an Edge Selection); export `SELECTION_COLOR`; add `if (e.delta > 5) return;` to `onClick`; Gesture move and end honour `store.gestureActive`. `scene/gizmo.tsx`: mount only for `selection?.kind === "node"` (no gizmo for an Edge Selection) and honour `store.gestureActive` in `onObjectChange` and `finish`. `scene/wall.tsx`: add `if (e.delta > 5) return;` to `wallHandlers.onClick`.
+    - Once by hand on the Core_Demo: confirm that R3F `delta` is the pointer travel in CSS px since `pointerdown`, and that the hidden hit line receives clicks. Record the result in `docs/decision-log.md` as one line.
+    - Design: Amendment section 4 (D20, D21) and section 5 (Gesture flag).
+    - _Requirements: 12.4, 12.8, 14.3, 23.1, 23.2, 23.3, 23.4, 23.5, 23.8, 23.12_
+    - Done when: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and `npm run check:build` exit 0.
+  - [x] 16.5 Core_Demo: Selection line and Remove selected edge
+    - `core/view/demo/main.tsx`: one text line `Selection: none`, `Selection: node <id>`, or `Selection: edge <id>`, set with `textContent` from `onSelect`; one button `Remove selected edge` that calls `handle.execute({ kind: "removeEdge", id })` only when the last Selection is an Edge. Put the line text and the button decision in a small pure helper in the demo folder with an example test (`*.test.ts`, no DOM). The `?perf` page needs no change because it passes no `onSelect`; check that it still builds and starts.
+    - Design: Amendment section 6 (Core_Demo).
+    - _Requirements: 21.7, 22.2, 23.10, 23.11_
+    - Done when: `npm run typecheck`, `npm run lint`, `npm test`, `npm run build`, and `npm run check:build` exit 0.
+
+- [x] 16.6 Checkpoint - Ensure all tests pass
+  - Run `npm run typecheck`, `npm run lint`, `npm run check:sections`, `npm run check:schema`, `npm test`, `npm run build`, `npm run check:build`. All exit 0. Ask the user if questions arise.
+
+- [~] 16.7 Verification gate for the amendment (human approves; the agent must not mark this done)
+  - **[Agent]** Run all sensors of task 16.6; report each result and the test counts (test files, tests passed, property tests P-VIEW-1 to P-VIEW-14).
+  - **[Agent: reviewer]** Review the amendment code against R-VIEW-03.6, 03.7, 03.10, 12.4, 12.7 to 12.9, 13.8, 17.4, 20.5, 20.8, 22, 23, P-VIEW-14, safety.md, and the core/app boundary. Report READY or NOT-READY with findings.
+  - **[Human]** Public-URL checklist (Core_Demo, desktop Chrome or Edge, after deploy):
+    1. In Edit mode with connect off, clicking an Edge selects it and draws it highlighted.
+    2. A Node in front of an Edge wins the click; a Wall in front of an Edge blocks the click and clears the Selection.
+    3. The Selection line shows node, edge, or none correctly.
+    4. A drag that starts on the selected Edge and ends on a floor or a Node leaves the Selection unchanged.
+    5. `Remove selected edge` removes the Edge; Undo restores it.
+    6. Selecting an Edge removes the Node outline and shows no gizmo.
+    7. While a gizmo handle is pressed, `execute` does not move the camera (if testable).
+    8. `?perf` median re-measured with the hit lines in place; record the value, CPU model, and browser version in `docs/decision-log.md`. It must stay ≤ 16.7 ms; otherwise take the fallbacks of design.md in order and log each.
+  - **[Human]** Then approve and add one line to `docs/decision-log.md` (date / Unit / what was checked / result).
+  - _Requirements: 3.6, 3.7, 3.10, 12.4, 12.7, 12.8, 12.9, 13.8, 17.4, 20.5, 20.8, 22.1, 23.1, 23.2, 23.3, 23.4, 23.5, 23.10, 23.11, 23.12_
+
 ## Notes
 
-- `core/view/helpers/arbitraries.ts` is touched by tasks 3.3, 4.2, 4.4, 4.9 (no change expected), 4.11, 4.13, 4.15, 4.17, and 6.5, in wave order. It is not matched by the Vitest `include` pattern.
-- `core/view/scene/view-root.tsx` is touched by tasks 8.3 (placeholder), 8.9, 8.5, 8.6, 8.7, 8.8, 10.1, 10.2, and 10.3, and `node-panel.tsx` by 8.5, 8.10, 10.1, and 10.3, so those tasks sit in different waves.
+- `core/view/helpers/arbitraries.ts` is touched by tasks 3.3, 4.2, 4.4, 4.9 (no change expected), 4.11, 4.13, 4.15, 4.17, 6.5, 16.1, and 16.2, in wave order. It is not matched by the Vitest `include` pattern.
+- `core/view/scene/view-root.tsx` is touched by tasks 8.3 (placeholder), 8.9, 8.5, 8.6, 8.7, 8.8, 10.1, 10.2, and 10.3, and `node-panel.tsx` by 8.5, 8.10, 10.1, and 10.3, so those tasks sit in different waves. In task 16, `view-store.ts` is touched by 16.1 and 16.3, `node-panel.tsx` by 16.1 and 16.4, and `view-root.tsx` by 16.4 only; `view-state.test.ts` by 16.1 and 16.2; `view-store.test.ts` by 16.1 and 16.3; each pair sits in different waves.
 - P-VIEW-1 (task 6.8) is last among the property tests because it imports every helper.
 - P-VIEW-8 sits in `settings-schema.test.ts` and covers both loaders (D18, O8).
 - Scene files are checked by the build (`tsc`, lint, `vite build`, `check:build`) and by the human gate, not by property tests (design.md, Testing Strategy). Only `view-store.ts` has example tests, because it imports no 3D or React module.
 - Out of scope, so no task: Back_Face flip display, glow, other effects than fog, multi-select, align, keyboard operation, a real AI adapter, App content (design.md, requirements.md).
 - Waves are a guide for parallel work; the checkpoints are kept in task-number order (a checkpoint runs after the tasks it follows).
 - Failing sensors block acceptance of a change (tech.md), including during Vibe work.
+- Task 16 is the approved 2026-11-16 amendment (Selection notification and Edge selection); 16.1 updates existing code and tests for the new Selection type and adds no other earlier-task changes, and its gate 16.7 is separate from gate 15. Checkpoint 16.6 is not in the graph.
 - No `tasks.meta.json` is created here; Kiro writes it when tasks are executed.
 
 ## Task Dependency Graph
@@ -436,7 +497,12 @@ pm run check:build exit 0.
     { "id": 17, "tasks": ["10.3"] },
     { "id": 18, "tasks": ["12.3"] },
     { "id": 19, "tasks": ["12.4"] },
-    { "id": 20, "tasks": ["13.1"] }
+    { "id": 20, "tasks": ["13.1"] },
+    { "id": 21, "tasks": ["16.1"] },
+    { "id": 22, "tasks": ["16.2", "16.3"] },
+    { "id": 23, "tasks": ["16.4"] },
+    { "id": 24, "tasks": ["16.5"] },
+    { "id": 25, "tasks": ["16.7"] }
   ]
 }
 ```

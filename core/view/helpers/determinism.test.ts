@@ -4,6 +4,7 @@ import { jsonEqual, scenarioArb } from "../../model/arbitraries.ts";
 import type { Scenario } from "../../model/scenario-schema.ts";
 import {
   actionSeqArb,
+  expandSeqAction,
   badProgressArb,
   boundedArb,
   cursorArb,
@@ -148,9 +149,11 @@ describe("P-VIEW-1 same input → same result", () => {
         same("newlyMissingZoneRefs same", newlyMissingZoneRefs, settings, fewer, fewer);
 
         let state = initialViewState(settings);
-        for (const action of c.actions) {
-          same("reduceViewState", reduceViewState, state, action);
-          state = reduceViewState(state, action);
+        for (const seq of c.actions) {
+          for (const action of expandSeqAction(seq, state)) {
+            same("reduceViewState", reduceViewState, state, action);
+            state = reduceViewState(state, action);
+          }
           same("cameraFor", cameraFor, state);
         }
       }),

@@ -1,4 +1,5 @@
 import { createRoot } from "react-dom/client";
+import type { EditCommand } from "../model/commands.ts";
 import type { History } from "../model/history.ts";
 import type { EffectRequest, Timeline } from "../model/rule-schema.ts";
 import { loadViewSettings } from "./helpers/settings-schema.ts";
@@ -13,13 +14,24 @@ import {
   type EditCallback,
   type EditReport,
   type ErrorContext,
+  type SelectCallback,
   type TimelineCallback,
   type TimelineReport,
   type WalkCallback,
 } from "./scene/view-store.ts";
-import type { WalkState } from "./helpers/view-state.ts";
+import type { Selection, WalkState } from "./helpers/view-state.ts";
 
-export type { EditCallback, EditReport, ErrorContext, TimelineCallback, TimelineReport, WalkCallback, WalkState };
+export type {
+  EditCallback,
+  EditReport,
+  ErrorContext,
+  SelectCallback,
+  Selection,
+  TimelineCallback,
+  TimelineReport,
+  WalkCallback,
+  WalkState,
+};
 
 export type ImageResolver = (reference: string) => string | null; // a URL the browser can draw, or "no image"
 
@@ -32,6 +44,7 @@ export type CoreViewOptions = {
   onEdit: EditCallback;
   onWalk: WalkCallback;
   onTimeline: TimelineCallback;
+  onSelect?: SelectCallback;
 };
 
 export type CoreViewHandle = {
@@ -45,6 +58,7 @@ export type CoreViewHandle = {
   connectOff(): void;
   undo(): void;
   redo(): void;
+  execute(command: EditCommand): void;
   startWalk(pathId: string, duration: number, linked?: Timeline): void;
   pauseWalk(): void;
   resumeWalk(): void;
@@ -77,6 +91,7 @@ function messageHandle(host: HTMLElement, text: string): CoreViewHandle {
     connectOff: noop,
     undo: noop,
     redo: noop,
+    execute: noop,
     startWalk: noop,
     pauseWalk: noop,
     resumeWalk: noop,
@@ -122,6 +137,7 @@ export function startCoreView(options: CoreViewOptions): CoreViewHandle {
     onEdit: options.onEdit,
     onWalk: options.onWalk,
     onTimeline: options.onTimeline,
+    onSelect: options.onSelect,
   });
 
   const missing = missingZoneRefs(settings.settings, options.history.present);
@@ -173,6 +189,10 @@ export function startCoreView(options: CoreViewOptions): CoreViewHandle {
     }),
     redo: guard(() => {
       store.redo();
+    }),
+    execute: guard((c) => {
+      store.cancelGesture();
+      store.execute(c);
     }),
     startWalk: guard((id, d, linked) => {
       store.startWalk(id, d, linked);

@@ -1,14 +1,17 @@
 import { Billboard, Line } from "@react-three/drei";
+import type { ThreeEvent } from "@react-three/fiber";
 import { memo, useEffect, useMemo, useState } from "react";
 import { CanvasTexture, DoubleSide, Euler, Quaternion, SRGBColorSpace, Vector3 } from "three";
 import { compareCodePoints } from "../../model/json.ts";
 import type { Edge, Node, Scenario } from "../../model/scenario-schema.ts";
+import { edgeClickAction } from "../helpers/connect-ui.ts";
 import { edgeMidpoint, edgeOffsets, loopSizes } from "../helpers/edge-layout.ts";
 import type { ViewSettings } from "../helpers/settings-schema.ts";
 import { edgeStyleFor, type Theme } from "../helpers/theme-schema.ts";
 import { computeVisibleSet } from "../helpers/visibility.ts";
 import { FONT_FAMILY, fontState, loadFont, type FontState } from "./font.ts";
-import type { NodePoses, ViewSnapshot } from "./view-store.ts";
+import { SELECTION_COLOR } from "./node-panel.tsx";
+import type { NodePoses, ViewSnapshot, ViewStore } from "./view-store.ts";
 
 const CURVE_SEGMENTS = 24;
 const HALF_WIDTH = 0.8;
@@ -184,18 +187,52 @@ function EdgeLabel({ text, color, at }: { text: string; color: string; at: Tuple
   );
 }
 
+/** Width of the invisible hit line in screen px (design.md D20). */
+const HIT_LINE_WIDTH = 12;
+
+/**
+ * Click on an Edge (R-VIEW-23.1). Notes from the installed @react-three/fiber (dist/events-*.cjs.dev.js):
+ * - `e.delta` is `round(hypot(offsetX - initialX, offsetY - initialY))` in canvas CSS px, where the initial point is
+ *   stored on every canvas `pointerdown`, handler or not. So an Edge needs no `onPointerDown`.
+ * - `onClick` runs from the canvas `click` event; R3F raycasts every object that has a handler and its descendants,
+ *   and three's Raycaster does not look at `visible`. A Line2 with `worldUnits` false only needs a camera and a
+ *   non-zero `material.resolution`, which drei sets from the canvas size. So the hit line can be `visible={false}`
+ *   (drei passes it to the object and the material). Fallback if it ever gets no click: `material.visible = false`.
+ */
+function edgeClickHandler(store: ViewStore, edgeId: string) {
+  return (e: ThreeEvent<MouseEvent>): void => {
+    e.stopPropagation();
+    if (e.delta > 5) return;
+    const view = store.getSnapshot().view;
+    if (edgeClickAction(view.editMode, view.connect !== null) === "select") {
+      store.dispatch({ type: "select", selection: { kind: "edge", id: edgeId } });
+    } else {
+      store.emptyClick();
+    }
+  };
+}
+
 const Drawing = memo(function Drawing({
   drawn,
   edge,
   theme,
   font,
+  store,
+  selected,
 }: {
   drawn: Drawn;
   edge: Edge;
   theme: Theme;
   font: FontState;
+  store: ViewStore;
+  selected: boolean;
 }): React.JSX.Element {
   const style = edgeStyleFor(theme, edge.type);
+  const width = selected ? 2 * style.width : style.width;
+  const color = selected ? SELECTION_COLOR : style.color;
+  // The hit line runs along the curve and includes the arrow tip.
+  const hitPoints = useMemo(() => [...drawn.points, drawn.tip], [drawn]);
+  const onClick = useMemo(() => edgeClickHandler(store, edge.id), [store, edge.id]);
   const { quat, center } = useMemo(() => {
     const d = new Vector3(...drawn.dir);
     return {
@@ -206,19 +243,22 @@ const Drawing = memo(function Drawing({
   const label = edge.label?.en ?? "";
   return (
     <>
-      <Line
-        points={drawn.points}
-        color={style.color}
-        lineWidth={style.width}
-        worldUnits
-        dashed={style.dashed}
-        dashSize={0.2}
-        gapSize={0.12}
-      />
-      <mesh position={center} quaternion={quat}>
-        <coneGeometry args={[Math.max(style.width * 1.5, drawn.arrowLength * 0.3), drawn.arrowLength, 12]} />
-        <meshBasicMaterial color={style.color} />
-      </mesh>
+      <group onClick={onClick}>
+        <Line
+          points={drawn.points}
+          color={color}
+          lineWidth={width}
+          worldUnits
+          dashed={style.dashed}
+          dashSize={0.2}
+          gapSize={0.12}
+        />
+        <mesh position={center} quaternion={quat}>
+          <coneGeometry args={[Math.max(width * 1.5, drawn.arrowLength * 0.3), drawn.arrowLength, 12]} />
+          <meshBasicMaterial color={color} />
+        </mesh>
+        <Line points={hitPoints} color={color} lineWidth={HIT_LINE_WIDTH} worldUnits={false} visible={false} />
+      </group>
       {font === "ready" && label !== "" ? <EdgeLabel text={label} color={theme.text} at={drawn.labelAt} /> : null}
     </>
   );
@@ -245,6 +285,8 @@ const LoopDrawing = memo(function LoopDrawing({
   theme,
   font,
   poses,
+  store,
+  selected,
 }: {
   node: Node;
   edge: Edge;
@@ -252,13 +294,15 @@ const LoopDrawing = memo(function LoopDrawing({
   theme: Theme;
   font: FontState;
   poses: NodePoses | undefined;
+  store: ViewStore;
+  selected: boolean;
 }): React.JSX.Element {
   const width = edgeStyleFor(theme, edge.type).width;
   const frame = useMemo(() => frameOf(node, poses), [node, poses]);
   const drawn = useMemo(() => layoutLoop(node, radius, width, poses), [node, radius, width, poses]);
   return (
     <group position={frame.center} quaternion={frame.quat}>
-      <Drawing drawn={drawn} edge={edge} theme={theme} font={font} />
+      <Drawing drawn={drawn} edge={edge} theme={theme} font={font} store={store} selected={selected} />
     </group>
   );
 });
@@ -297,16 +341,19 @@ function visibleEdgesOf(
   return { edges: scenario.edges.filter((e) => wanted.has(e.id)), ids };
 }
 
-type EdgeProps = { snapshot: ViewSnapshot; poses?: NodePoses };
+type EdgeProps = { snapshot: ViewSnapshot; poses?: NodePoses; store: ViewStore };
 
 /** Skips a redraw unless an input the Edges use changed (a walk tick or an orbit move changes none). */
 function edgeLinesUnchanged(a: EdgeProps, b: EdgeProps): boolean {
   return (
+    a.store === b.store &&
     a.poses === b.poses &&
     a.snapshot.history.present === b.snapshot.history.present &&
     a.snapshot.settings === b.snapshot.settings &&
     a.snapshot.theme === b.snapshot.theme &&
-    a.snapshot.view.shownPresetId === b.snapshot.view.shownPresetId
+    a.snapshot.view.shownPresetId === b.snapshot.view.shownPresetId &&
+    a.snapshot.view.selection === b.snapshot.view.selection &&
+    a.snapshot.view.editMode === b.snapshot.view.editMode
   );
 }
 
@@ -332,8 +379,10 @@ function layoutEdge(
 }
 
 /** One curve, arrow head, and optional label per visible Edge, or a loop for a self-edge (R-VIEW-05). */
-export const EdgeLines = memo(function EdgeLines({ snapshot, poses }: EdgeProps): React.JSX.Element {
+export const EdgeLines = memo(function EdgeLines({ snapshot, poses, store }: EdgeProps): React.JSX.Element {
   const font = useFontState();
+  const selection = snapshot.view.selection;
+  const selectedEdgeId = selection?.kind === "edge" ? selection.id : null;
   const scenario = snapshot.history.present;
   const { theme, settings } = snapshot;
   const shownPresetId = snapshot.view.shownPresetId;
@@ -367,10 +416,22 @@ export const EdgeLines = memo(function EdgeLines({ snapshot, poses }: EdgeProps)
               theme={theme}
               font={font}
               poses={touched ? poses : undefined}
+              store={store}
+              selected={edge.id === selectedEdgeId}
             />
           );
         }
-        return <Drawing key={edge.id} drawn={item.drawn} edge={edge} theme={theme} font={font} />;
+        return (
+          <Drawing
+            key={edge.id}
+            drawn={item.drawn}
+            edge={edge}
+            theme={theme}
+            font={font}
+            store={store}
+            selected={edge.id === selectedEdgeId}
+          />
+        );
       })}
     </>
   );

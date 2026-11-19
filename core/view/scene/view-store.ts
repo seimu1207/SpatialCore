@@ -11,6 +11,7 @@ import type { CameraPose, ViewSettings } from "../helpers/settings-schema.ts";
 import { loadTheme, type Theme } from "../helpers/theme-schema.ts";
 import {
   reduceViewState,
+  type Selection,
   type ViewAction,
   type ViewEvent,
   type ViewState,
@@ -27,6 +28,8 @@ export type EditCallback = (report: EditReport) => void;
 export type WalkCallback = (state: WalkState, progress: number) => void;
 export type TimelineReport = { kind: "position"; position: number } | { kind: "end" };
 export type TimelineCallback = (report: TimelineReport) => void;
+/** Called after each change of the Selection, with a copy; `null` when it was cleared (R-VIEW-03.10, 22). */
+export type SelectCallback = (selection: Selection) => void;
 
 /** The pose of a Node while it is dragged or previewed; it replaces the Scenario pose (R-VIEW-05.7). */
 export type NodePose = {
@@ -57,6 +60,7 @@ export type ViewStoreInit = {
   onEdit: EditCallback;
   onWalk: WalkCallback;
   onTimeline: TimelineCallback;
+  onSelect?: SelectCallback;
 };
 
 const effectListSchema = z.array(effectRequestSchema);
@@ -74,6 +78,7 @@ export class ViewStore {
   private onEdit: EditCallback;
   private onWalk: WalkCallback;
   private onTimeline: TimelineCallback;
+  private onSelect: SelectCallback;
 
   constructor(init: ViewStoreInit) {
     this.snapshot = {
@@ -88,6 +93,7 @@ export class ViewStore {
     this.onEdit = init.onEdit;
     this.onWalk = init.onWalk;
     this.onTimeline = init.onTimeline;
+    this.onSelect = init.onSelect ?? (() => undefined);
   }
 
   // --- useSyncExternalStore surface ---
@@ -119,6 +125,7 @@ export class ViewStore {
     this.onEdit = () => undefined;
     this.onWalk = () => undefined;
     this.onTimeline = () => undefined;
+    this.onSelect = () => undefined;
   }
 
   // --- reducer access ---
@@ -152,6 +159,7 @@ export class ViewStore {
       if (e.kind === "walk") this.onWalk(e.state, e.progress);
       else if (e.kind === "timelinePosition") this.onTimeline({ kind: "position", position: e.position });
       else if (e.kind === "timelineEnd") this.onTimeline({ kind: "end" });
+      else if (e.kind === "selection") this.onSelect(e.selection === null ? null : { ...e.selection });
     }
   }
 
@@ -172,7 +180,7 @@ export class ViewStore {
    * cancels a pending first Node (R-VIEW-15.7). One place for the canvas, floors, and Walls.
    */
   emptyClick(): void {
-    this.dispatch({ type: "select", id: null });
+    this.dispatch({ type: "select", selection: null });
     const { editMode, connect } = this.snapshot.view;
     if (editMode === "edit" && connect !== null) this.dispatch({ type: "connectClick", id: null });
   }
@@ -191,6 +199,14 @@ export class ViewStore {
     if (this.stopped) return;
     if (poses === null && this.snapshot.preview === NO_POSES) return;
     this.commit({ ...this.snapshot, preview: poses ?? NO_POSES });
+  }
+
+  /** Ends a Gesture that is in progress: clears the preview and the flag, and a pending first Node (R-VIEW-23.12). */
+  cancelGesture(): void {
+    if (this.stopped) return;
+    this.setPreview(null);
+    this.setGestureActive(false);
+    if (this.snapshot.view.connect?.first != null) this.dispatch({ type: "connectClick", id: null });
   }
 
   // --- History ---
@@ -374,10 +390,13 @@ export class ViewStore {
   private modelChangedAction(): ViewAction {
     const { history, settings, view } = this.snapshot;
     const preset = settings.presets.find((p) => p.id === view.shownPresetId) ?? settings.presets[0];
+    const visible = computeVisibleSet(history.present, preset.filter);
     return {
       type: "modelChanged",
       nodeIds: history.present.nodes.map((n) => n.id),
-      visibleNodeIds: computeVisibleSet(history.present, preset.filter).nodes,
+      visibleNodeIds: visible.nodes,
+      edgeIds: history.present.edges.map((e) => e.id),
+      visibleEdgeIds: visible.edges,
     };
   }
 
