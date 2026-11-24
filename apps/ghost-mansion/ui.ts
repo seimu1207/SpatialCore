@@ -5,14 +5,14 @@
 import type { LocalizedText } from "../../core/model/scenario-schema.ts";
 import type { ControlId, GameViewState, UiSink } from "./controller.ts";
 import { CONTROL_IDS } from "./model/controls.ts";
-import type { Phase } from "./model/phase.ts";
+import { coachFor } from "./coach.ts";
 import {
   canBreak,
+  coachText,
   controlLabels,
   fogNote,
   hiddenFollowed,
   incident,
-  phaseInstructions,
   phaseNames,
   reachNote,
   scoreLabels,
@@ -50,8 +50,85 @@ const CHART_TEXT = "#f3e9ff";
 const CHART_AXIS = "#9a8fb0";
 const ACCENT = "#ff7a1a";
 const MAX_STARS = 3;
-const PHASE_ORDER: Phase[] = ["sample", "prepare", "ghostNight", "fixIt", "lookBack"];
-const PRIMARY: readonly ControlId[] = ["next", "toPrepare", "startNight", "toLookBack", "prepareAgain"];
+
+// Pixel ghost with a little witch hat: h hat, b band, w body, e eye. One cell = one SVG unit.
+const GHOST_ROWS = [
+  ".....hh.....",
+  "....hhhh....",
+  "...hhhhhh...",
+  "..bbbbbbbb..",
+  "..wwwwwwww..",
+  ".wwwwwwwwww.",
+  ".wweewweeww.",
+  ".wweewweeww.",
+  ".wwwwwwwwww.",
+  ".wwwwwwwwww.",
+  ".wwwwwwwwww.",
+  ".ww.wwww.ww.",
+];
+const GHOST_COLORS: Record<string, string> = { h: "#6a3fb5", b: "#ff7a1a", w: "#f3e9ff", e: "#1b1426" };
+
+function ghostIcon(): SVGSVGElement {
+  const icon = svg("svg", {
+    viewBox: `0 0 12 ${GHOST_ROWS.length}`,
+    width: "56",
+    height: String(56 * (GHOST_ROWS.length / 12)),
+    role: "img",
+    "aria-label": coachText.guideName.en,
+    "shape-rendering": "crispEdges",
+  });
+  icon.classList.add("gm-ghost");
+  GHOST_ROWS.forEach((row, y) => {
+    [...row].forEach((ch, x) => {
+      const fill = GHOST_COLORS[ch];
+      if (fill !== undefined) icon.appendChild(svg("rect", { x: String(x), y: String(y), width: "1", height: "1", fill }));
+    });
+  });
+  return icon;
+}
+
+/** The guide: the ghost and a speech bubble with the coach line (always at the top of the panel). */
+function guide(say: string): HTMLElement {
+  const box = el("div");
+  box.className = "gm-guide";
+  const bubble = el("p", say);
+  bubble.className = "gm-bubble";
+  box.append(ghostIcon(), bubble);
+  return box;
+}
+
+function progress(p: { done: number; total: number; label: LocalizedText }): HTMLElement {
+  const box = el("div");
+  box.className = "gm-progress";
+  const bar = el("div");
+  bar.className = "gm-progress-bar";
+  bar.setAttribute("role", "progressbar");
+  bar.setAttribute("aria-label", p.label.en);
+  bar.setAttribute("aria-valuemin", "0");
+  bar.setAttribute("aria-valuemax", String(p.total));
+  bar.setAttribute("aria-valuenow", String(p.done + 1));
+  bar.setAttribute("aria-valuetext", p.label.en);
+  for (let i = 0; i < p.total; i++) {
+    const dot = el("span");
+    dot.className = i < p.done ? "gm-dot gm-dot-done" : i === p.done ? "gm-dot gm-dot-now" : "gm-dot";
+    bar.appendChild(dot);
+  }
+  box.append(bar, el("p", p.label.en));
+  box.lastElementChild?.classList.add("gm-progress-label");
+  return box;
+}
+
+/** A big number with a small label. */
+function stat(label: string, value: number, bad = false): HTMLElement {
+  const box = el("div");
+  box.className = bad ? "gm-stat gm-stat-bad" : "gm-stat";
+  const number = el("span", String(value));
+  number.className = "gm-stat-num";
+  const caption = el("span", label);
+  caption.className = "gm-stat-label";
+  box.append(number, caption);
+  return box;
+}
 
 function stars(count: number): HTMLElement {
   const box = el("p", "★".repeat(Math.min(count, MAX_STARS)) + "☆".repeat(Math.max(MAX_STARS - count, 0)));
@@ -125,20 +202,9 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
     buttons.clear();
     root.replaceChildren();
 
-    const steps = el("ol");
-    steps.className = "gm-steps";
-    for (const p of PHASE_ORDER) {
-      const step = el("li", phaseNames[p].en);
-      if (p === state.phase) {
-        step.classList.add("gm-step-current");
-        step.setAttribute("aria-current", "step");
-      }
-      steps.appendChild(step);
-    }
-    const heading = el("h2", phaseNames[state.phase].en);
-    const instruction = el("p", phaseInstructions[state.phase].en);
-    instruction.className = "gm-instruction";
-    root.append(steps, heading, instruction);
+    const coach = coachFor(state);
+    root.append(guide(coach.say.en), progress(coach.progress));
+    root.appendChild(el("h2", phaseNames[state.phase].en));
 
     // Error or failure message; drawn here so the next render cannot erase it.
     const notice = noticeLine(state);
@@ -159,9 +225,13 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
     // Prepare status (R-APP1-09.6).
     if (state.status !== null) {
       const status = el("div");
-      status.appendChild(el("p", `${scoreLabels.convenience.en}: ${state.status.convenience}`));
-      status.appendChild(el("p", `${scoreLabels.damageIfTricked.en}: ${state.status.reachScore}`));
-      status.appendChild(el("p", reachNote.en));
+      const row = el("div");
+      row.className = "gm-stats";
+      row.append(
+        stat(scoreLabels.convenience.en, state.status.convenience),
+        stat(scoreLabels.damageIfTricked.en, state.status.reachScore, true),
+      );
+      status.append(row, el("p", reachNote.en));
       root.appendChild(status);
     }
 
@@ -192,8 +262,13 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
         root.appendChild(list);
       }
       if (state.score !== null) {
-        root.appendChild(el("p", `${scoreLabels.convenience.en}: ${state.score.convenience}`));
-        root.appendChild(el("p", `${scoreLabels.damage.en}: ${state.score.damage}`));
+        const row = el("div");
+        row.className = "gm-stats";
+        row.append(
+          stat(scoreLabels.convenience.en, state.score.convenience),
+          stat(scoreLabels.damage.en, state.score.damage, true),
+        );
+        root.appendChild(row);
         root.appendChild(stars(state.score.stars));
         root.appendChild(scoreChart(state.score));
       }
@@ -221,7 +296,11 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
     for (const id of CONTROL_IDS) {
       if (id === "preset" || id === "back") continue;
       const b = button(id, controlLabels[id].en);
-      b.classList.add(PRIMARY.includes(id) ? "gm-primary" : "gm-secondary");
+      if (id === coach.doNext) {
+        b.classList.add("gm-primary", "gm-next");
+      } else {
+        b.classList.add("gm-secondary");
+      }
       actions.appendChild(b);
     }
     root.appendChild(actions);

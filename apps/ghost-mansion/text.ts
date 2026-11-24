@@ -105,3 +105,79 @@ export const errorMessages = {
     ja: "3D表示が使えないため、ゲームを始められません。",
   } as LocalizedText,
 };
+
+// Coach lines (coach.ts): short, friendly, no attack steps, no technical term.
+export const coachText = {
+  sampleStart: {
+    en: "Boo! I'm the ghost. Press Next and I'll show what I need to cause trouble.",
+    ja: "うらめしや！ぼくはおばけ。「次へ」を押すと、いたずらに必要なことを見せるよ。",
+  } as LocalizedText,
+  sampleFound: { en: "I found it:", ja: "見つけた：" } as LocalizedText,
+  sampleMore: { en: "Press Next to see the next thing I need.", ja: "「次へ」で次に必要なことを見よう。" } as LocalizedText,
+  sampleDone: {
+    en: "That's all I need, and the trouble spreads along the keys. Press Go to Prepare to stop me!",
+    ja: "これで全部そろった。被害は鍵づたいに広がるよ。「ととのえるへ」でぼくを止めてみて！",
+  } as LocalizedText,
+  prepareStart: {
+    en: "Now it's your mansion. The robot has too many keys! Click the strange page outside the house in the 3D view.",
+    ja: "ここからは君の屋敷。ロボに鍵を渡しすぎだよ！3Dの中で、家の外にあるあやしいページをクリックしてね。",
+  } as LocalizedText,
+  prepareDontRead: {
+    en: "That page looks fishy. Press the glowing button so the robot won't read it.",
+    ja: "このページはあやしいね。光っているボタンで、ロボに読ませないようにしよう。",
+  } as LocalizedText,
+  prepareKey: {
+    en: "You picked a key. Give it a bell so a person checks first, or choose No line.",
+    ja: "鍵を選んだね。ベルを付けて人が確かめるようにするか、線なしにしよう。",
+  } as LocalizedText,
+  prepareConnect: {
+    en: "Click two things in the 3D view to link them, or press Cancel.",
+    ja: "3Dの中で2つをクリックしてつなごう。やめるときは「やめる」を押してね。",
+  } as LocalizedText,
+  prepareReady: {
+    en: "Nice! I can't get in the old way now. Press Start Ghost Night to test it.",
+    ja: "いいね！もう前のやり方では入れないよ。「おばけの夜を始める」で試そう。",
+  } as LocalizedText,
+  nightWatch: {
+    en: "Just watch. The robot is doing its jobs. Nothing to press.",
+    ja: "見ているだけでOK。ロボが仕事をしているよ。押すものはないよ。",
+  } as LocalizedText,
+  nightNow: { en: "Now:", ja: "いま：" } as LocalizedText,
+  fixStart: {
+    en: "Oh no, trouble! First, click the robot, then press Stop the robot.",
+    ja: "たいへん！まずロボをクリックして、「ロボを止める」を押そう。",
+  } as LocalizedText,
+  fixStop: {
+    en: "Stop the robot first. Click the robot, then press the glowing button.",
+    ja: "まずロボを止めよう。ロボをクリックして、光っているボタンを押してね。",
+  } as LocalizedText,
+  fixStopReady: { en: "Good. Now the robot stops.", ja: "いいね。これでロボが止まるよ。" } as LocalizedText,
+  fixCutPick: {
+    en: "Robot stopped! Next, click a key line that spreads the trouble.",
+    ja: "ロボが止まった！次は、被害が広がる鍵の線をクリックしよう。",
+  } as LocalizedText,
+  fixCut: {
+    en: "Press the glowing button to cut that key line.",
+    ja: "光っているボタンで、その鍵の線を切ろう。",
+  } as LocalizedText,
+  fixConsult: {
+    en: "Don't handle it alone. Press Consult a person, then click the robot and a grown-up or friend.",
+    ja: "ひとりで抱えないで。「相談する」を押して、ロボと大人か友達をクリックしてつなごう。",
+  } as LocalizedText,
+  fixDone: {
+    en: "You did all three! Press Go to Look Back to see how it went.",
+    ja: "3つともできた！「ふりかえりへ」で結果を見よう。",
+  } as LocalizedText,
+  lookBackReplaying: { en: "Watching the replay. Look where it could have stopped.", ja: "もう一度見ているよ。どこで止められたか探そう。" } as LocalizedText,
+  lookBackThree: {
+    en: "Three stars! Great job. Press Replay to watch again, or Prepare again to try another way.",
+    ja: "星3つ！すごい。「もう一度見る」で見直すか、「ととのえ直す」で別のやり方を試そう。",
+  } as LocalizedText,
+  lookBackMore: {
+    en: "Read your stars. Press Prepare again to make the mansion safer and more useful.",
+    ja: "星を見てみよう。「ととのえ直す」で、もっと安全で便利な屋敷にしよう。",
+  } as LocalizedText,
+  progressStep: { en: "Step", ja: "ステップ" } as LocalizedText,
+  progressOf: { en: "of", ja: "/" } as LocalizedText,
+  guideName: { en: "Guide ghost", ja: "案内おばけ" } as LocalizedText,
+};

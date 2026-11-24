@@ -21,3 +21,4 @@ Types: `pbt` (bug found by PBT), `spec` (fixed through a spec), `vibe` (fixed du
 2026-11-23 | spec | app-ghost-mansion: the `createHistory` failure branch of the controller cannot be reached through the public API, because the judge functions reject an invalid Scenario first | Accepted gap: the branch stays as a guard and has no test
 2026-11-23 | behavior | app-ghost-mansion: a failed sub-agent run was marked completed by the orchestrator | Mark a task completed only after its "Done when" commands exit 0; leave a failed run as not completed
 - 2026-11-23 | Vibe | パネルの見た目（暗い配色、2カラム、5段階の表示、大きなボタン、いまの視点の強調）を整えた。3Dの高さを親要素に与え忘れると画面が細い帯になる（core の表示は親の高さに合わせる）ため、ホスト要素には最初から高さを書く | 公開URLでの人の確認で見つかった
+- 2026-11-23 | Vibe | 公開URLで「どう進めればよいか分からない」と指摘された。操作を並べるだけでは足りず、常に見える案内役（吹き出し）と「次に押すボタン」の強調が要る。案内の文言は、状態から決まる純関数（coach.ts）にして、描画なしでテストした | 人の確認。Kiroween 2025 の受賞作（SpookBnB の磨りガラスと丸いボタン、InteractionKit の案内キャラ）を参考にした
