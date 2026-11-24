@@ -44,10 +44,8 @@ function setup(flags: Flags = none) {
     stopTimeline: record("stopTimeline"),
   };
   const renders: GameViewState[] = [];
-  const messages: LocalizedText[] = [];
   const ui: UiSink = {
     render: (s) => renders.push(s),
-    message: (t) => messages.push(t),
   };
   const controller = new GameController(data, attackRules, flags, view, ui);
   const names = (): string[] => calls.map((c) => c.name);
@@ -56,7 +54,7 @@ function setup(flags: Flags = none) {
     if (r === undefined) throw new Error("nothing rendered");
     return r;
   };
-  return { controller, calls, names, renders, messages, last };
+  return { controller, calls, names, renders, last };
 }
 
 type Ctx = ReturnType<typeof setup>;
@@ -352,7 +350,7 @@ describe("Ghost Night (15.5, 15.6, 10.1, 6.5, 19.1)", () => {
     toPrepare(c);
     c.controller.act("startNight");
     c.controller.onEdit({ kind: "errors", context: "timeline", errors: [] });
-    expect(c.messages).toContain(errorMessages.judgeFailed);
+    expect(c.last().notice).toBe(errorMessages.judgeFailed);
     expect(c.last().phase).not.toBe("ghostNight");
   });
 
@@ -367,9 +365,8 @@ describe("Ghost Night (15.5, 15.6, 10.1, 6.5, 19.1)", () => {
     };
     c.controller.onEdit({ kind: "history", history: historyOf(broken) });
     c.calls.length = 0;
-    c.messages.length = 0;
     c.controller.act("startNight");
-    expect(c.messages).toContain(errorMessages.judgeFailed);
+    expect(c.last().notice).toBe(errorMessages.judgeFailed);
     expect(c.calls).toEqual([]);
     expect(c.last().phase).toBe("prepare");
   });
@@ -496,7 +493,7 @@ describe("-> fixIt (16.1, 16.8, 16.9)", () => {
     c.calls.length = 0;
     c.controller.onEdit({ kind: "errors", context: "timeline", errors: [] });
     expect(c.names()).toEqual(["stopTimeline", "setEffects"]);
-    expect(c.messages).toContain(errorMessages.judgeFailed);
+    expect(c.last().notice).toBe(errorMessages.judgeFailed);
   });
 });
 
@@ -710,32 +707,31 @@ describe("errors reports (16.10)", () => {
     toFixIt(c);
     c.controller.onEdit({ kind: "history", history: build(data.preset, stopCmd(data.preset)) });
     const before = c.last().response;
-    c.messages.length = 0;
     c.calls.length = 0;
     c.controller.onEdit({ kind: "errors", context, errors: [] });
     expect(c.last().response).toEqual(before);
     expect(c.last().response?.log).toEqual(["stop-robot"]);
     switch (context) {
       case "edit":
-        expect(c.messages).toEqual([errorMessages.changeFailed]);
+        expect(c.last().notice).toBe(errorMessages.changeFailed);
         expect(c.last().phase).toBe("fixIt");
         break;
       case "start":
       case "settings":
       case "theme":
-        expect(c.messages).toEqual([errorMessages.invalidData]);
+        expect(c.last().notice).toBe(errorMessages.invalidData);
         c.controller.act("toLookBack");
         expect(c.last().phase).toBe("fixIt");
         break;
       case "preset":
       case "effects":
       case "walk":
-        expect(c.messages).toEqual([errorMessages.judgeFailed]);
+        expect(c.last().notice).toBe(errorMessages.judgeFailed);
         expect(c.calls).toEqual([]);
         expect(c.last().phase).toBe("fixIt");
         break;
       case "timeline":
-        expect(c.messages).toEqual([errorMessages.judgeFailed]);
+        expect(c.last().notice).toBe(errorMessages.judgeFailed);
         expect(c.names()).toEqual(["stopTimeline", "setEffects"]);
         break;
     }
@@ -774,9 +770,8 @@ describe("invalid night start Scenario (16.1)", () => {
     const broken: Scenario = { ...data.preset, zones: [...data.preset.zones, zone] };
     c.controller.onEdit({ kind: "history", history: historyOf(broken) });
     c.calls.length = 0;
-    c.messages.length = 0;
     c.controller.act("startNight");
-    expect(c.messages.length).toBeGreaterThan(0);
+    expect(c.last().notice).not.toBeNull();
     expect(c.calls).toEqual([]);
     expect(c.last().phase).toBe("prepare");
   });
@@ -852,5 +847,51 @@ describe("click path (20.2)", () => {
     expect(c.last().phase).toBe("lookBack");
     expect(c.last().score?.stars).toBe(3);
     expect(activations).toBeLessThanOrEqual(12);
+  });
+});
+
+describe("notice survives the render that follows (02.4, 06.5, 16.10)", () => {
+  it("every errors context leaves the notice in the state of the last render", () => {
+    const expected = {
+      edit: errorMessages.changeFailed,
+      start: errorMessages.invalidData,
+      settings: errorMessages.invalidData,
+      theme: errorMessages.invalidData,
+      preset: errorMessages.judgeFailed,
+      effects: errorMessages.judgeFailed,
+      walk: errorMessages.judgeFailed,
+      timeline: errorMessages.judgeFailed,
+    } as const;
+    for (const context of ALL_CONTEXTS) {
+      const c = setup();
+      toPrepare(c);
+      c.controller.onEdit({ kind: "errors", context, errors: [] });
+      expect(c.last().notice).toBe(expected[context]);
+    }
+  });
+
+  it("a refreshPrepare failure shows the notice in the render of onEdit, and a good history clears it", () => {
+    const c = setup();
+    toPrepare(c);
+    const first = data.preset.edges[0];
+    if (first === undefined) throw new Error("preset has edges");
+    const broken: Scenario = {
+      ...data.preset,
+      edges: [...data.preset.edges, { ...first, id: "bad", from: "ghost-node", to: "nowhere" }],
+    };
+    c.controller.onEdit({ kind: "history", history: historyOf(broken) });
+    expect(c.last().notice).toBe(errorMessages.judgeFailed);
+    c.controller.onEdit({ kind: "history", history: historyOf(data.preset) });
+    expect(c.last().notice).toBeNull();
+  });
+
+  it("a control press clears the notice; a fresh controller has none", () => {
+    const c = setup();
+    toPrepare(c);
+    expect(c.last().notice).toBeNull();
+    c.controller.onEdit({ kind: "errors", context: "edit", errors: [] });
+    expect(c.last().notice).toBe(errorMessages.changeFailed);
+    c.controller.act("startOver");
+    expect(c.last().notice).toBeNull();
   });
 });

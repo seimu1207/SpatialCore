@@ -68,9 +68,11 @@ export type GameViewState = {
   incident: boolean;
   /** Live Response_Result in Fix It; the stored one in Look Back after Fix It; otherwise null. */
   response: ResponseView | null;
+  /** Error or failure message (R-APP1-02.4, 06.5, 16.10); null when none. Drawn by render, so it survives it. */
+  notice: LocalizedText | null;
 };
 
-export type UiSink = { render(state: GameViewState): void; message(text: LocalizedText): void };
+export type UiSink = { render(state: GameViewState): void };
 
 type Replay = "none" | "sample" | "night" | "fix" | "lookBack";
 
@@ -96,6 +98,8 @@ export class GameController {
   private actionLog: ResponseOp[] = [];
   private response: ResponseView | null = null;
   private responseResult: ResponseView | null = null;
+  /** The last error or failure message. Cleared by the next control press or `history` report. */
+  private notice: LocalizedText | null = null;
 
   private readonly data: GameData;
   private readonly attackRules: RuleDefinition;
@@ -130,6 +134,7 @@ export class GameController {
 
   onEdit(report: EditReport): void {
     if (report.kind === "history") {
+      this.notice = null;
       const previous = this.history?.present ?? null;
       this.history = report.history;
       if (this.phaseState.phase === "prepare") this.refreshPrepare();
@@ -141,22 +146,22 @@ export class GameController {
     // An `errors` report never changes the stored History (R-APP1-16.10).
     switch (report.context) {
       case "edit":
-        this.ui.message(errorMessages.changeFailed);
+        this.notice = errorMessages.changeFailed;
         break;
       case "start":
       case "settings":
       case "theme":
         this.broken = true;
-        this.ui.message(errorMessages.invalidData);
+        this.notice = errorMessages.invalidData;
         break;
       case "preset":
       case "effects":
       case "walk":
-        this.ui.message(errorMessages.judgeFailed);
+        this.notice = errorMessages.judgeFailed;
         break;
       case "timeline":
         // No playback runs, so no `end` report will come: run the end handler at once.
-        this.ui.message(errorMessages.judgeFailed);
+        this.notice = errorMessages.judgeFailed;
         this.handleEnd();
         break;
     }
@@ -183,6 +188,7 @@ export class GameController {
 
   act(control: ControlId, arg?: string): void {
     if (this.broken) return;
+    this.notice = null;
     // An operation control ends Connect_Mode first (R-APP1-19.9). Phase changes and "cancel" and
     // "start over" call `connectOff` in their own place of the call table.
     const own: readonly ControlId[] = ["toPrepare", "startNight", "cancel", "startOver"];
@@ -277,7 +283,7 @@ export class GameController {
     if (k === count) {
       const timeline = sampleTimeline(night, highlightEffects(this.data.attackCard, count));
       if (!timeline.ok) {
-        this.ui.message(errorMessages.judgeFailed);
+        this.notice = errorMessages.judgeFailed;
       } else {
         this.replay = "sample";
         this.activeTimeline = timeline.value;
@@ -295,7 +301,7 @@ export class GameController {
     this.enterPrepare(this.data.preset, { type: "toPrepare" });
   }
 
-  /** The call table rows "→ prepare": `stopTimeline`, `connectOff`, `setPreset`, `setEditMode`, `setHistory`, `setEffects`. */
+  /** The call table rows "ↁEprepare": `stopTimeline`, `connectOff`, `setPreset`, `setEditMode`, `setHistory`, `setEffects`. */
   private enterPrepare(scenario: Scenario, action: Parameters<typeof nextPhase>[1]): void {
     const next = nextPhase(this.phaseState, action);
     if (next === this.phaseState) return;
@@ -360,7 +366,7 @@ export class GameController {
     if (this.history === null) return;
     const judged = judgeMansion(this.history.present, this.data, this.attackRules, this.flags);
     if (!judged.ok) {
-      this.ui.message(errorMessages.judgeFailed);
+      this.notice = errorMessages.judgeFailed;
       return;
     }
     this.judgement = judged.value;
@@ -441,7 +447,7 @@ export class GameController {
 
   // --- Fix It ---
 
-  /** Call table row "→ fixIt". */
+  /** Call table row "ↁEfixIt". */
   private enterFixIt(next: PhaseState, night: NightResult): void {
     const nightStart = this.nightStart;
     if (nightStart === null) return;
@@ -468,7 +474,7 @@ export class GameController {
       this.view.startTimeline(timeline.value);
     } else {
       this.activeTimeline = null;
-      this.ui.message(errorMessages.judgeFailed);
+      this.notice = errorMessages.judgeFailed;
       this.fixReplayEnd();
     }
     this.render();
@@ -485,7 +491,7 @@ export class GameController {
     if (night === null) return;
     const judged = judgeMansion(present, this.data, this.attackRules, this.flags);
     if (!judged.ok) {
-      this.ui.message(errorMessages.judgeFailed);
+      this.notice = errorMessages.judgeFailed;
       return;
     }
     this.view.setEffects(sortUniqueEffects([...night.damageEffects, ...judged.value.fog]));
@@ -504,12 +510,12 @@ export class GameController {
     if (this.nightStart === null) return null;
     const rules = withCheckSet(this.data.rules, responseCheckSet(this.nightStart));
     if (!rules.ok) {
-      this.ui.message(errorMessages.judgeFailed);
+      this.notice = errorMessages.judgeFailed;
       return null;
     }
     const checks = evaluateCheckSets(present, rules.value);
     if (!checks.ok) {
-      this.ui.message(errorMessages.judgeFailed);
+      this.notice = errorMessages.judgeFailed;
       return null;
     }
     const items = checks.value.find((c) => c.id === "response")?.items ?? [];
@@ -544,7 +550,7 @@ export class GameController {
 
   // --- Look Back ---
 
-  /** Call table row "→ lookBack". The Response_Result is stored only when coming from Fix It (R-APP1-17.4). */
+  /** Call table row "ↁElookBack". The Response_Result is stored only when coming from Fix It (R-APP1-17.4). */
   private enterLookBack(next: PhaseState, night: NightResult, fromFix: boolean): void {
     const nightStart = this.nightStart;
     if (nightStart === null) return;
@@ -578,7 +584,8 @@ export class GameController {
     if (this.phaseState.phase !== "lookBack" || this.replay !== "none" || night === null || nightStart === null) return;
     const timeline = nightTimeline(nightStart, night, this.data.jobs, this.hiddenJobId);
     if (!timeline.ok) {
-      this.ui.message(errorMessages.judgeFailed);
+      this.notice = errorMessages.judgeFailed;
+      this.render();
       return;
     }
     const history = this.makeHistory(nightStart);
@@ -613,7 +620,8 @@ export class GameController {
 
   private fail(text: LocalizedText): void {
     if (text === errorMessages.invalidData) this.broken = true;
-    this.ui.message(text);
+    this.notice = text;
+    this.render();
   }
 
   private render(): void {
@@ -661,6 +669,7 @@ export class GameController {
         night === null ? null : { convenience: night.convenience, damage: night.damageScore, stars: night.stars },
       incident: phase === "fixIt",
       response: phase === "fixIt" ? this.response : phase === "lookBack" ? this.responseResult : null,
+      notice: this.notice,
     });
   }
 }

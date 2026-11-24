@@ -24,6 +24,11 @@ const OP_LABELS: Record<string, LocalizedText> = {
   consult: controlLabels.consult,
 };
 
+/** The English text of the alert line `render` draws as `<p role="alert">`, or null when there is none. */
+export function noticeLine(state: Pick<GameViewState, "notice">): string | null {
+  return state.notice === null ? null : state.notice.en;
+}
+
 function opLabel(id: string): string {
   return (OP_LABELS[id] ?? { en: id }).en;
 }
@@ -103,6 +108,14 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
     const heading = el("h2", phaseNames[state.phase].en);
     const instruction = el("p", phaseInstructions[state.phase].en);
     root.append(heading, instruction);
+
+    // Error or failure message; drawn here so the next render cannot erase it.
+    const notice = noticeLine(state);
+    if (notice !== null) {
+      const alert = el("p", notice);
+      alert.setAttribute("role", "alert");
+      root.appendChild(alert);
+    }
 
     // Incident and hidden-command lines (R-APP1-15.4).
     if (state.phase === "ghostNight" || state.phase === "fixIt") {
@@ -211,12 +224,5 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
     return box;
   }
 
-  return {
-    render,
-    message(text: LocalizedText): void {
-      const note = el("p", text.en);
-      note.setAttribute("role", "alert");
-      root.appendChild(note);
-    },
-  };
+  return { render };
 }
