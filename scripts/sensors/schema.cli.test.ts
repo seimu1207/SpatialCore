@@ -20,9 +20,13 @@ function make(files: Record<string, string>): TmpProject {
 }
 
 describe("schema CLI", { timeout: 60_000 }, () => {
-  it("real placeholder Scenario_Files pass in single-file runs (08.3)", () => {
-    for (const app of ["ghost-mansion", "moodwalk"]) {
-      const r = runSensor(CLI, repoRoot, [`apps/${app}/scenarios/placeholder.json`]);
+  it("real app Scenario_Files (Ghost Mansion preset, Moodwalk placeholder) pass in single-file runs (08.3)", () => {
+    const files: [string, string][] = [
+      ["ghost-mansion", "preset-mansion.json"],
+      ["moodwalk", "placeholder.json"],
+    ];
+    for (const [app, file] of files) {
+      const r = runSensor(CLI, repoRoot, [`apps/${app}/scenarios/${file}`]);
       expect(r.status, r.stdout + r.stderr).toBe(0);
     }
   });

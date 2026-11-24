@@ -143,6 +143,16 @@ const dotDotAfterDotBan = ban(
   "import-boundary: core/view/helpers must not use '..' after './'.",
 );
 
+// Ghost Mansion App files must not import the core/view demo page or any test file.
+const demoBan = ban(`core${S}view${S}demo`, "import-boundary: ghost-mansion must not import core/view/demo.");
+const testFileBan = ban(`\\.test\\.ts$`, "import-boundary: ghost-mansion must not import a *.test.ts file.");
+const moodwalkBan = ban(MOODWALK_SEGMENT, "import-boundary: ghost-mansion must not import from moodwalk.");
+// The game model may import only the two schema helpers of core/view.
+const modelViewBan = ban(
+  `core${S}view${S}(?!helpers${S}(?:settings|theme)-schema\\.ts$)`,
+  "import-boundary: the game model may import only settings-schema.ts and theme-schema.ts from core/view.",
+);
+
 const TS = "*.{ts,tsx}";
 
 export function boundaryConfigs(): Linter.Config[] {
@@ -157,11 +167,13 @@ export function boundaryConfigs(): Linter.Config[] {
       [appsBan, ...modelPackageBans, helpersEscapeBan, modelDotDotBan, dotDotAfterDotBan],
     ),
     scope("core-other", [`core/**/${TS}`], ["core/model/**", "core/view/**"], [appsBan]),
+    scope("app-ghost-mansion", [`apps/ghost-mansion/**/${TS}`], [], [moodwalkBan, demoBan, testFileBan]),
+    // Bans are repeated: a later flat-config entry replaces the rule options of app-ghost-mansion.
     scope(
-      "app-ghost-mansion",
-      [`apps/ghost-mansion/**/${TS}`],
+      "app-ghost-mansion-model",
+      [`apps/ghost-mansion/model/**/${TS}`],
       [],
-      [ban(MOODWALK_SEGMENT, "import-boundary: ghost-mansion must not import from moodwalk.")],
+      [moodwalkBan, demoBan, testFileBan, ...modelPackageBans, modelViewBan],
     ),
     scope(
       "app-moodwalk",

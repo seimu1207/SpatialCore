@@ -1,0 +1,33 @@
+{
+  "background": "#1b1426",
+  "floor": "#2e2440",
+  "wall": "#4a3b63",
+  "text": "#f3e9ff",
+  "defaultNode": { "fill": "#e6e0f0", "border": "#6b5a8a" },
+  "defaultEdge": { "color": "#9a8fb0", "width": 0.03, "dashed": false },
+  "nodes": {
+    "robot": { "fill": "#cfe8ff", "border": "#3a6ea5" },
+    "room": { "fill": "#ffe9b3", "border": "#a0742a" },
+    "text": { "fill": "#ffffff", "border": "#6b6b6b" },
+    "answer": { "fill": "#e8ffe0", "border": "#3d7a2c" },
+    "source": { "fill": "#e0f0ff", "border": "#2c5a7a" },
+    "helper": { "fill": "#ffe0f0", "border": "#a03c6e" }
+  },
+  "edges": {
+    "plain-key": { "color": "#ff7a1a", "width": 0.05, "dashed": false },
+    "bell-key": { "color": "#4fc3f7", "width": 0.05, "dashed": true },
+    "reads": { "color": "#b0b0b0", "width": 0.03, "dashed": false },
+    "no-read": { "color": "#6b6b6b", "width": 0.03, "dashed": true },
+    "chain": { "color": "#d04040", "width": 0.04, "dashed": true },
+    "cites": { "color": "#7ad07a", "width": 0.03, "dashed": false },
+    "consult": { "color": "#ff8ad8", "width": 0.04, "dashed": false }
+  },
+  "effects": {
+    "unsourced-fog": { "style": "fog", "color": "#c8c8d0", "opacity": 0.55 },
+    "damage": { "style": "fog", "color": "#e03030", "opacity": 0.45 },
+    "highlight": { "style": "fog", "color": "#ffd400", "opacity": 0.35 },
+    "bell-stop": { "style": "fog", "color": "#4fc3f7", "opacity": 0.5 },
+    "could-stop": { "style": "fog", "color": "#ff9800", "opacity": 0.5 },
+    "job-focus": { "style": "fog", "color": "#a0e8ff", "opacity": 0.3 }
+  }
+}

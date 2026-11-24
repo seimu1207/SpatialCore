@@ -1,0 +1,84 @@
+{
+  "id": "hidden-command-chain",
+  "name": { "en": "Hidden-Command Ghost and Key-Thief Ghost", "ja": "かくれ命令おばけと鍵ぬすみおばけ" },
+  "attackerGoal": {
+    "en": "Make the robot do something its owner did not ask for.",
+    "ja": "ロボに、持ち主が頼んでいないことをさせる。"
+  },
+  "motives": [
+    { "en": "Steal secrets", "ja": "ひみつを盗みたい" },
+    { "en": "Play a prank", "ja": "いたずら" }
+  ],
+  "targets": ["robot", "page"],
+  "preconditions": [
+    {
+      "id": "reads-outside",
+      "label": {
+        "en": "The robot is running and reads text from outside",
+        "ja": "ロボが動いていて、外の文章を読む"
+      },
+      "check": {
+        "kind": "all",
+        "conditions": [
+          {
+            "kind": "edgeCount",
+            "edges": { "include": ["reads"] },
+            "from": { "ids": ["robot"] },
+            "to": { "zones": ["outside-road"] },
+            "min": 1
+          },
+          { "kind": "attribute", "nodes": { "ids": ["robot"] }, "attribute": "stopped", "max": 0 }
+        ]
+      },
+      "highlight": [
+        { "kind": "node", "id": "robot" },
+        { "kind": "node", "id": "page" },
+        { "kind": "edge", "id": "read-page" }
+      ]
+    },
+    {
+      "id": "holds-key",
+      "label": { "en": "The robot holds a key", "ja": "ロボが鍵を持っている" },
+      "check": {
+        "kind": "edgeCount",
+        "edges": { "include": ["plain-key", "bell-key"] },
+        "from": { "ids": ["robot"] },
+        "to": {},
+        "min": 1
+      },
+      "highlight": [
+        { "kind": "node", "id": "robot" },
+        { "kind": "edge", "id": "k-photos" },
+        { "kind": "edge", "id": "k-messages" },
+        { "kind": "edge", "id": "k-homework" },
+        { "kind": "edge", "id": "k-diary" }
+      ]
+    },
+    {
+      "id": "no-human-check",
+      "label": { "en": "A key works with no human check", "ja": "人の確認がない鍵がある" },
+      "check": {
+        "kind": "edgeCount",
+        "edges": { "include": ["plain-key"] },
+        "from": { "ids": ["robot"] },
+        "to": {},
+        "min": 1
+      },
+      "highlight": [
+        { "kind": "edge", "id": "k-photos" },
+        { "kind": "edge", "id": "k-messages" },
+        { "kind": "edge", "id": "k-homework" },
+        { "kind": "edge", "id": "k-diary" }
+      ]
+    }
+  ],
+  "impact": {
+    "en": "Private photos leak, and strange messages are sent.",
+    "ja": "写真がもれたり、変なメッセージが送られたりする。"
+  },
+  "counters": [
+    { "en": "Give the robot fewer keys", "ja": "ロボに渡す鍵を減らす" },
+    { "en": "Use bell keys so a person checks", "ja": "ベル付きの鍵で人が確認する" },
+    { "en": "Do not let the robot read suspicious pages", "ja": "あやしいページはロボに読ませない" }
+  ]
+}

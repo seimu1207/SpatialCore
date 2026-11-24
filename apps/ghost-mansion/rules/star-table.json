@@ -1,0 +1,7 @@
+{
+  "defaultStars": 1,
+  "rules": [
+    { "stars": 3, "minConvenience": 4, "maxDamage": 0 },
+    { "stars": 2, "minConvenience": 2, "maxDamage": 3 }
+  ]
+}

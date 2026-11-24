@@ -245,6 +245,42 @@ describe("R-FND-04.1-04.7 boundary import rules", () => {
     });
   });
 
+  describe("R-APP1-21.1 ghost-mansion game model scope", () => {
+    const file = "apps/ghost-mansion/model/a.ts";
+    const rejected = [
+      "three",
+      "react",
+      "../../../core/view/start-view.tsx",
+      "../../../core/view/scene/x.ts",
+      "../../../core/view/demo/main.tsx",
+      "./x.test.ts",
+    ];
+    for (const spec of rejected) {
+      for (const [form, make] of Object.entries(FORMS)) {
+        it(`R-APP1-21.1 model rejects ${spec}: ${form}`, () => {
+          expectReported(make(spec), file, spec);
+        });
+      }
+    }
+    for (const spec of ["../../../core/model/history.ts", "../../../core/view/helpers/theme-schema.ts", "./phase.ts"]) {
+      for (const [form, make] of Object.entries(FORMS)) {
+        it(`R-APP1-21.1 model accepts ${spec}: ${form}`, () => {
+          expectNotReported(make(spec), file);
+        });
+      }
+    }
+    it("R-APP1-21.1 model still rejects moodwalk", () => {
+      expectReported(`import "../../moodwalk/x.ts";\n`, file, "../../moodwalk/x.ts");
+    });
+    it("R-APP1-21.1 App page rejects core/view/demo and test files", () => {
+      expectReported(`import "../../core/view/demo/main.tsx";\n`, "apps/ghost-mansion/main.ts", "demo");
+      expectReported(`import "./x.test.ts";\n`, "apps/ghost-mansion/main.ts", "./x.test.ts");
+    });
+    it("R-APP1-21.1 App page still allows start-view and core/view", () => {
+      expectNotReported(`import "../../core/view/start-view.tsx";\nimport "three";\n`, "apps/ghost-mansion/main.ts");
+    });
+  });
+
   describe("R-FND-04.6 clean file", () => {
     it("R-FND-04.6 a clean file reports no finding at all", () => {
       const msgs = lintText(`export const answer: number = 42;\n`, "core/model/x.ts");

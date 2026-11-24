@@ -1,0 +1,74 @@
+{
+  "schemaVersion": 1,
+  "id": "mansion-rules",
+  "propagation": { "pass": ["plain-key", "chain"], "stop": ["bell-key"] },
+  "checkSets": [
+    {
+      "id": "jobs",
+      "items": [
+        {
+          "id": "sort-photos",
+          "condition": {
+            "kind": "edgeCount",
+            "edges": { "include": ["plain-key", "bell-key"] },
+            "from": { "ids": ["robot"] },
+            "to": { "ids": ["photos"] },
+            "min": 1
+          }
+        },
+        {
+          "id": "reply-messages",
+          "condition": {
+            "kind": "edgeCount",
+            "edges": { "include": ["plain-key", "bell-key"] },
+            "from": { "ids": ["robot"] },
+            "to": { "ids": ["messages"] },
+            "min": 1
+          }
+        },
+        {
+          "id": "summarize-page",
+          "condition": {
+            "kind": "all",
+            "conditions": [
+              {
+                "kind": "edgeCount",
+                "edges": { "include": ["plain-key", "bell-key"] },
+                "from": { "ids": ["robot"] },
+                "to": { "ids": ["homework"] },
+                "min": 1
+              },
+              {
+                "kind": "edgeCount",
+                "edges": { "include": ["reads"] },
+                "from": { "ids": ["robot"] },
+                "to": { "ids": ["page"] },
+                "min": 1
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "nodeRules": [
+    {
+      "id": "unsourced-answer",
+      "nodes": { "types": ["answer"] },
+      "condition": {
+        "kind": "not",
+        "condition": {
+          "kind": "edgeCount",
+          "edges": { "include": ["cites"] },
+          "from": { "self": true },
+          "to": { "types": ["source"] },
+          "min": 1
+        }
+      }
+    }
+  ],
+  "effectRules": [
+    { "id": "mark-unsourced", "effect": "unsourced-fog", "source": { "kind": "nodeRule", "id": "unsourced-answer" } },
+    { "id": "show-damage", "effect": "damage", "source": { "kind": "propagation" } }
+  ]
+}

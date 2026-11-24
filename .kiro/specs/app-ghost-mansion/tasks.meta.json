@@ -1,0 +1,843 @@
+{
+  "pbtResults": {
+    "4.6 Write property test for safer keys": {
+      "status": "passed",
+      "lastRunTimestamp": 1795438781144
+    },
+    "4.13 Write property test for the Phase flow": {
+      "status": "passed",
+      "lastRunTimestamp": 1795438802400
+    },
+    "4.17 Write property test for the Action_Log": {
+      "status": "passed",
+      "lastRunTimestamp": 1795438849598
+    },
+    "4.19 Write property test for the night Timeline": {
+      "status": "passed",
+      "lastRunTimestamp": 1795439342280
+    },
+    "4.7 Write property test for convenience": {
+      "status": "passed",
+      "lastRunTimestamp": 1795439456278
+    },
+    "4.8 Write property test for the Star_Table": {
+      "status": "passed",
+      "lastRunTimestamp": 1795439596250
+    },
+    "4.9 Write property test for the attack verdict": {
+      "status": "passed",
+      "lastRunTimestamp": 1795439701485
+    },
+    "4.10 Write property test for transforms": {
+      "status": "passed",
+      "lastRunTimestamp": 1795439871594
+    },
+    "4.11 Write property test for Plausible_Ghost fog": {
+      "status": "passed",
+      "lastRunTimestamp": 1795440150523
+    },
+    "6.6 Write property test for determinism of the judgement": {
+      "status": "passed",
+      "lastRunTimestamp": 1795520370062
+    }
+  },
+  "executionHistory": {
+    "1.1 Add the game-model lint scope and the App import bans": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433503661
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433520769
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433704432
+      }
+    ],
+    "1.2 Replace the placeholder Scenario_File with the Preset_Mansion": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433503952
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433716669
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433891146
+      }
+    ],
+    "2.1 Add fixed names and Built_Rules builders": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433504180
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433717110
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433891813
+      }
+    ],
+    "2.2 Implement `model/game-data.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433504402
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433911857
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434158360
+      }
+    ],
+    "2.3 Add the Game_Data files and the bundle": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433504623
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434170404
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434386309
+      }
+    ],
+    "2.4 Write the example tests on the bundled Game_Data": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433504836
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434398308
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434629138
+      }
+    ],
+    "3. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433505060
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434641634
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434732358
+      }
+    ],
+    "4.1 Implement `model/commands.ts` and `model/sample.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433505298
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434746036
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434982353
+      }
+    ],
+    "4.2 Add the test generators in `model/arbitraries.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433505529
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795435013629
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437415448
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437622880
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438426980
+      }
+    ],
+    "4.3 Write property test for the Sample_Mansion derivation": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433505749
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438724360
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439192350
+      }
+    ],
+    "4.4 Implement `model/effects.ts` and `model/judge.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433505951
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434746354
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434983106
+      }
+    ],
+    "4.5 Write example tests for `judge.ts` and `effects.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433506154
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795435013932
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437415781
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437623629
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438428521
+      }
+    ],
+    "4.6 Write property test for safer keys": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433506371
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438724741
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439193316
+      }
+    ],
+    "4.7 Write property test for convenience": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433506592
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439367489
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439465411
+      }
+    ],
+    "4.8 Write property test for the Star_Table": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433506932
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439479205
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439606281
+      }
+    ],
+    "4.9 Write property test for the attack verdict": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433507150
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439620242
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439765634
+      }
+    ],
+    "4.10 Write property test for transforms": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433507368
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439779112
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439882344
+      }
+    ],
+    "4.11 Write property test for Plausible_Ghost fog": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433507628
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439899683
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440162253
+      }
+    ],
+    "4.12 Implement `model/phase.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433507876
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434746698
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434983688
+      }
+    ],
+    "4.13 Write property test for the Phase flow": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433508104
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438726228
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439193610
+      }
+    ],
+    "4.14 Implement `model/order.ts`": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433508376
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434747395
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434984412
+      }
+    ],
+    "4.15 Write property test for the order check": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433508593
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438727288
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439194586
+      }
+    ],
+    "4.16 Implement `model/action-log.ts` with example tests": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433508866
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795435015058
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437416050
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437624454
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438426217
+      }
+    ],
+    "4.17 Write property test for the Action_Log": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433509041
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438727594
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439195936
+      }
+    ],
+    "4.18 Implement `model/timelines.ts` with example tests": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433509239
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795435015427
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437416353
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437625313
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438427777
+      }
+    ],
+    "4.19 Write property test for the night Timeline": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433509456
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439234582
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795439352465
+      }
+    ],
+    "4.20 Implement `model/controls.ts` with example tests": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433509672
+      },
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795435015928
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437416720
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795437625813
+      }
+    ],
+    "4.21 Implement `model/fallback.ts` with example tests": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433509856
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438458523
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795438708946
+      }
+    ],
+    "5. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433510076
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440176477
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440253320
+      }
+    ],
+    "6.1 Extend `apps/ghost-mansion/text.ts` with the UI texts": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433510290
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440267014
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440379773
+      }
+    ],
+    "6.2 Implement `controller.ts`: start, Sample, Prepare, and Ghost Night": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433510511
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440393681
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440732105
+      }
+    ],
+    "6.3 Extend `controller.ts`: Fix It, Look Back, error contexts, and control buttons": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433510777
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440748377
+      },
+      {
+        "executionId": "35140fa3-a4b5-4673-8d88-10179a4c5969",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440760575
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795517951401
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795518453134
+      }
+    ],
+    "6.4 Write example tests for the controller: start, Sample, Prepare, Ghost Night": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433510994
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440748723
+      },
+      {
+        "executionId": "35140fa3-a4b5-4673-8d88-10179a4c5969",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440760902
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795517951752
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795518453408
+      }
+    ],
+    "6.5 Write example tests for the controller: Fix It, Look Back, errors, controls": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433511193
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795518481118
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795518488905
+      }
+    ],
+    "6.6 Write property test for determinism of the judgement": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433511411
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795518481405
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520056019
+      }
+    ],
+    "7.1 Implement `ui.ts` and the page shell": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433511632
+      },
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440750386
+      },
+      {
+        "executionId": "35140fa3-a4b5-4673-8d88-10179a4c5969",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440761389
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795517952018
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795518453648
+      }
+    ],
+    "7.2 Implement `main.ts` and remove the placeholder": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433511939
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520057343
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520388292
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520493663
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520899645
+      }
+    ],
+    "8.1 Record fallbacks and lessons": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433512160
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520899935
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520916045
+      }
+    ],
+    "9. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433512404
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520917189
+      },
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795521051959
+      }
+    ],
+    "10. Verification gate (human approves; the agent must not mark this done)": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433512674
+      }
+    ],
+    "1. Repo-foundation changes": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795433891485
+      }
+    ],
+    "2. Game_Data schemas, data files, and loading": [
+      {
+        "executionId": "a76325b6-e657-4fab-84d6-715cab35062c",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795434629508
+      }
+    ],
+    "4. Game model": [
+      {
+        "executionId": "8e5f37ee-7065-48e9-bcbe-9a9f16d1d890",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795440162571
+      }
+    ],
+    "6. Controller": [
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520056315
+      }
+    ],
+    "7. DOM panel and page wiring": [
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520388452
+      }
+    ],
+    "8. Decision records": [
+      {
+        "executionId": "632b87b6-d4ae-457b-95eb-68837ccecd45",
+        "chatSessionId": "sess_b0cc071a-ce1e-4af1-9f41-3c35b8a85ff3",
+        "timestamp": 1795520916262
+      }
+    ]
+  }
+}

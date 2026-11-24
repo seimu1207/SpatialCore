@@ -1,0 +1,16 @@
+{
+  "weights": { "plain": 2, "bell": 1 },
+  "jobs": [
+    { "id": "sort-photos", "label": { "en": "Sort the photos", "ja": "写真を整理する" }, "room": "photos" },
+    { "id": "reply-messages", "label": { "en": "Reply to messages", "ja": "メッセージに返信する" }, "room": "messages" },
+    {
+      "id": "summarize-page",
+      "label": {
+        "en": "Summarize a web page into the homework folder",
+        "ja": "ページをまとめて宿題フォルダに入れる"
+      },
+      "room": "homework",
+      "reads": "page"
+    }
+  ]
+}

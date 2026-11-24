@@ -1,0 +1,28 @@
+{
+  "zoneFootprints": [
+    { "kind": "ring", "id": "outside-road", "x": 0, "z": 0, "innerRadius": 7, "outerRadius": 10 },
+    { "kind": "ring", "id": "garden", "x": 0, "z": 0, "innerRadius": 4.5, "outerRadius": 7 },
+    { "kind": "ring", "id": "house", "x": 0, "z": 0, "innerRadius": 2, "outerRadius": 4.5 },
+    { "kind": "ring", "id": "safe", "x": 0, "z": 0, "innerRadius": 0, "outerRadius": 2 }
+  ],
+  "presets": [
+    {
+      "id": "ghost-view",
+      "label": { "en": "Ghost view (weak-spot scanner)", "ja": "おばけ目線（弱点スキャナー）" },
+      "pose": { "position": { "x": 0, "y": 1.0, "z": 9.9 }, "target": { "x": 0, "y": 0.3, "z": 7.4 } },
+      "filter": { "zones": ["outside-road"], "edgeRule": "anyEnd" }
+    },
+    {
+      "id": "overhead",
+      "label": { "en": "Overhead view", "ja": "俯瞰" },
+      "pose": { "position": { "x": 0, "y": 20, "z": 12 }, "target": { "x": 0, "y": 0, "z": 0 } },
+      "filter": { "edgeRule": "bothEnds" }
+    }
+  ],
+  "paths": [],
+  "detailDistance": 2.0,
+  "snapStep": 0.5,
+  "wallHeight": 1.2,
+  "editMode": "view",
+  "stepDuration": 2.5
+}

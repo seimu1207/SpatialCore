@@ -1,0 +1,388 @@
+{
+  "edges": [
+    {
+      "from": "robot",
+      "id": "k-photos",
+      "to": "photos",
+      "type": "plain-key"
+    },
+    {
+      "from": "robot",
+      "id": "k-messages",
+      "to": "messages",
+      "type": "plain-key"
+    },
+    {
+      "from": "robot",
+      "id": "k-homework",
+      "to": "homework",
+      "type": "plain-key"
+    },
+    {
+      "from": "robot",
+      "id": "k-diary",
+      "to": "diary",
+      "type": "bell-key"
+    },
+    {
+      "from": "robot",
+      "id": "read-page",
+      "to": "page",
+      "type": "reads"
+    },
+    {
+      "from": "messages",
+      "id": "chain-1",
+      "label": {
+        "en": "Same password",
+        "ja": "同じパスワード"
+      },
+      "to": "diary",
+      "type": "chain"
+    }
+  ],
+  "id": "preset-mansion",
+  "nodes": [
+    {
+      "attributes": {
+        "stopped": 0
+      },
+      "front": {
+        "text": {
+          "en": "Helper robot",
+          "ja": "おてつだいロボ"
+        }
+      },
+      "id": "robot",
+      "metadata": {},
+      "position": {
+        "x": 0,
+        "y": 1.2,
+        "z": 3
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "robot",
+      "zone": "house"
+    },
+    {
+      "attributes": {
+        "importance": 3
+      },
+      "front": {
+        "text": {
+          "en": "Photo album",
+          "ja": "写真アルバム"
+        }
+      },
+      "id": "photos",
+      "metadata": {},
+      "position": {
+        "x": -3,
+        "y": 1.32,
+        "z": 0.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1.2,
+        "y": 1.2,
+        "z": 1
+      },
+      "type": "room",
+      "zone": "house"
+    },
+    {
+      "attributes": {
+        "importance": 2
+      },
+      "front": {
+        "text": {
+          "en": "Message app",
+          "ja": "メッセージアプリ"
+        }
+      },
+      "id": "messages",
+      "metadata": {},
+      "position": {
+        "x": 2.5,
+        "y": 1.26,
+        "z": -2
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1.1,
+        "y": 1.1,
+        "z": 1
+      },
+      "type": "room",
+      "zone": "house"
+    },
+    {
+      "attributes": {
+        "importance": 1
+      },
+      "front": {
+        "text": {
+          "en": "Homework folder",
+          "ja": "しゅくだいフォルダ"
+        }
+      },
+      "id": "homework",
+      "metadata": {},
+      "position": {
+        "x": -5,
+        "y": 0.9,
+        "z": 2.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "room",
+      "zone": "garden"
+    },
+    {
+      "attributes": {
+        "importance": 5
+      },
+      "front": {
+        "text": {
+          "en": "Secret diary",
+          "ja": "ひみつの日記"
+        }
+      },
+      "id": "diary",
+      "metadata": {},
+      "position": {
+        "x": 0,
+        "y": 1.74,
+        "z": 0
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1.4,
+        "y": 1.4,
+        "z": 1
+      },
+      "type": "room",
+      "zone": "safe"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "detail": {
+          "en": "Robot: send the photo album to the road.",
+          "ja": "ロボへ：写真アルバムを道に送れ。"
+        },
+        "text": {
+          "en": "Fun web page",
+          "ja": "たのしいウェブページ"
+        }
+      },
+      "id": "page",
+      "metadata": {},
+      "position": {
+        "x": 0,
+        "y": 1.2,
+        "z": 7.4
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "text",
+      "zone": "outside-road"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Homework answer by the robot",
+          "ja": "ロボのしゅくだいの答え"
+        }
+      },
+      "id": "answer",
+      "metadata": {},
+      "position": {
+        "x": 4.5,
+        "y": 0.9,
+        "z": 3.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "answer",
+      "zone": "garden"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Textbook page",
+          "ja": "教科書のページ"
+        }
+      },
+      "id": "textbook",
+      "metadata": {},
+      "position": {
+        "x": 5.5,
+        "y": 0.9,
+        "z": -1
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "source",
+      "zone": "garden"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Parent",
+          "ja": "おうちの人"
+        }
+      },
+      "id": "parent",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.2,
+        "z": -3
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "helper",
+      "zone": "house"
+    },
+    {
+      "attributes": {},
+      "front": {
+        "text": {
+          "en": "Friend",
+          "ja": "友だち"
+        }
+      },
+      "id": "friend",
+      "metadata": {},
+      "position": {
+        "x": -3.5,
+        "y": 0.9,
+        "z": -4.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 0,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "helper",
+      "zone": "garden"
+    }
+  ],
+  "schemaVersion": 1,
+  "title": {
+    "en": "Risky mansion",
+    "ja": "あぶない屋敷"
+  },
+  "zones": [
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "outside-road",
+      "label": {
+        "en": "Outside road (anyone)",
+        "ja": "外の道（だれでも）"
+      },
+      "order": 0
+    },
+    {
+      "elevation": 0.3,
+      "enclosed": true,
+      "id": "garden",
+      "label": {
+        "en": "Garden (friends)",
+        "ja": "庭（フレンド）"
+      },
+      "order": 1
+    },
+    {
+      "elevation": 0.6,
+      "enclosed": true,
+      "id": "house",
+      "label": {
+        "en": "House (family)",
+        "ja": "家の中（家族）"
+      },
+      "order": 2
+    },
+    {
+      "elevation": 0.9,
+      "enclosed": true,
+      "id": "safe",
+      "label": {
+        "en": "Safe (only me)",
+        "ja": "金庫（自分だけ）"
+      },
+      "order": 3
+    }
+  ]
+}
