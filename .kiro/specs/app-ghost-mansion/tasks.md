@@ -259,7 +259,7 @@ Conventions for every task:
     - Done when: `npm test` exits 0.
 
 - [x] 7. DOM panel and page wiring
-  - [x] 7.1 Implement `ui.ts` and the page shell
+  - [-] 7.1 Implement `ui.ts` and the page shell
     - `ui.ts`: a `UiSink` that draws the panel with `document.createElement` and `textContent` only: Phase name, instruction, the buttons from `controlsFor` (disabled state included), the incident and hidden-command lines, Convenience and "Damage if the robot is tricked" with `reachNote` in Prepare, the Attack_Card with each Precondition `label`, "Met" or "Not met", the `counters`, and `canBreak` in Look Back, the three Response_Operations with Done or Not done in Fix It, the Response_Result in Look Back, and the SVG score chart (two axes, convenience 0 to 6, damage 0 to 11, one circle, star count as text) made with `createElementNS`. The ViewPreset controls call `setPreset`. No `innerHTML`. It holds no game logic.
     - `apps/ghost-mansion/index.html`: `<title>Ghost Mansion</title>`, `#panel` and `#view` elements, keeping the entry script reference to `main.ts`.
     - Not imported by any entry page until task 7.2, so the public URL is unchanged.

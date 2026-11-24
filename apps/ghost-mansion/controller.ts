@@ -70,6 +70,8 @@ export type GameViewState = {
   response: ResponseView | null;
   /** Error or failure message (R-APP1-02.4, 06.5, 16.10); null when none. Drawn by render, so it survives it. */
   notice: LocalizedText | null;
+  /** Id of the ViewPreset last passed to `setPreset` (display only: marks the active view button). */
+  presetId: string;
 };
 
 export type UiSink = { render(state: GameViewState): void };
@@ -100,6 +102,8 @@ export class GameController {
   private responseResult: ResponseView | null = null;
   /** The last error or failure message. Cleared by the next control press or `history` report. */
   private notice: LocalizedText | null = null;
+  /** The ViewPreset last passed to `setPreset`; initially the first preset. Display only. */
+  private presetId = "";
 
   private readonly data: GameData;
   private readonly attackRules: RuleDefinition;
@@ -113,6 +117,12 @@ export class GameController {
     this.flags = flags;
     this.view = view;
     this.ui = ui;
+    this.presetId = data.viewSettings.presets[0]?.id ?? "";
+  }
+
+  private showPreset(id: string): void {
+    this.presetId = id;
+    this.view.setPreset(id);
   }
 
   /** Sample entry (design.md call table, row "start"). */
@@ -210,7 +220,10 @@ export class GameController {
     }
     switch (control) {
       case "preset":
-        if (arg !== undefined) this.view.setPreset(arg);
+        if (arg !== undefined) {
+          this.showPreset(arg);
+          this.render();
+        }
         return;
       case "next":
         return this.sampleNext();
@@ -277,7 +290,7 @@ export class GameController {
     if (this.sampleShown >= count) return;
     this.sampleShown += 1;
     const k = this.sampleShown;
-    if (k === 1) this.view.setPreset("overhead");
+    if (k === 1) this.showPreset("overhead");
     const marks = highlightEffects(this.data.attackCard, k);
     this.view.setEffects(sortUniqueEffects([...night.fog, ...marks]));
     if (k === count) {
@@ -322,7 +335,7 @@ export class GameController {
     this.responseResult = null;
     this.view.stopTimeline();
     this.view.connectOff();
-    this.view.setPreset("overhead");
+    this.showPreset("overhead");
     this.view.setEditMode("edit");
     this.view.setHistory(history);
     this.view.setEffects(sortUniqueEffects(judged.value.fog));
@@ -409,7 +422,7 @@ export class GameController {
     this.connectType = null;
     this.view.stopTimeline();
     this.view.connectOff();
-    this.view.setPreset("overhead");
+    this.showPreset("overhead");
     this.view.setEditMode("view");
     this.view.startTimeline(timeline.value);
     this.render();
@@ -465,7 +478,7 @@ export class GameController {
     this.replay = "none";
     this.view.stopTimeline();
     this.view.connectOff();
-    this.view.setPreset("overhead");
+    this.showPreset("overhead");
     this.view.setEditMode("edit");
     this.view.setHistory(history);
     if (timeline.ok) {
@@ -566,7 +579,7 @@ export class GameController {
     this.connectType = null;
     this.view.stopTimeline();
     this.view.connectOff();
-    this.view.setPreset("overhead");
+    this.showPreset("overhead");
     this.view.setEditMode("view");
     this.view.setHistory(history);
     this.view.setEffects(sortUniqueEffects(lookBackEffects(night)));
@@ -593,7 +606,7 @@ export class GameController {
     this.history = history;
     this.replay = "lookBack";
     this.activeTimeline = timeline.value;
-    this.view.setPreset("overhead");
+    this.showPreset("overhead");
     this.view.setHistory(history);
     this.view.startTimeline(timeline.value);
     this.render();
@@ -670,6 +683,7 @@ export class GameController {
       incident: phase === "fixIt",
       response: phase === "fixIt" ? this.response : phase === "lookBack" ? this.responseResult : null,
       notice: this.notice,
+      presetId: this.presetId,
     });
   }
 }

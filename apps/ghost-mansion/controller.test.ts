@@ -90,6 +90,18 @@ describe("start (call table row start)", () => {
   });
 });
 
+describe("presetId (display only)", () => {
+  it("starts at the first preset and follows setPreset calls and the preset control", () => {
+    const c = setup();
+    c.controller.start();
+    expect(c.last().presetId).toBe("ghost-view");
+    c.controller.act("next");
+    expect(c.last().presetId).toBe("overhead");
+    c.controller.act("preset", "ghost-view");
+    expect(c.last().presetId).toBe("ghost-view");
+  });
+});
+
 describe("Sample (13.3, 13.4, 13.6)", () => {
   it("first next calls setPreset(overhead) first, then setEffects; later steps do not set the preset", () => {
     const c = setup();

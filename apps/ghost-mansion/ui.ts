@@ -5,6 +5,7 @@
 import type { LocalizedText } from "../../core/model/scenario-schema.ts";
 import type { ControlId, GameViewState, UiSink } from "./controller.ts";
 import { CONTROL_IDS } from "./model/controls.ts";
+import type { Phase } from "./model/phase.ts";
 import {
   canBreak,
   controlLabels,
@@ -44,6 +45,21 @@ export type PanelOptions = {
 const SVG_NS = "http://www.w3.org/2000/svg";
 const MAX_CONVENIENCE = 6;
 const MAX_DAMAGE = 11;
+// Colours of theme.json (text and plain-key accent).
+const CHART_TEXT = "#f3e9ff";
+const CHART_AXIS = "#9a8fb0";
+const ACCENT = "#ff7a1a";
+const MAX_STARS = 3;
+const PHASE_ORDER: Phase[] = ["sample", "prepare", "ghostNight", "fixIt", "lookBack"];
+const PRIMARY: readonly ControlId[] = ["next", "toPrepare", "startNight", "toLookBack", "prepareAgain"];
+
+function stars(count: number): HTMLElement {
+  const box = el("p", "★".repeat(Math.min(count, MAX_STARS)) + "☆".repeat(Math.max(MAX_STARS - count, 0)));
+  box.className = "gm-stars";
+  box.setAttribute("role", "img");
+  box.setAttribute("aria-label", `${scoreLabels.stars.en}: ${count}`);
+  return box;
+}
 
 function el<K extends keyof HTMLElementTagNameMap>(tag: K, text?: string): HTMLElementTagNameMap[K] {
   const node = document.createElement(tag);
@@ -78,12 +94,13 @@ function scoreChart(score: { convenience: number; damage: number; stars: number 
     height: String(h),
     role: "img",
   });
-  chart.appendChild(svg("line", { x1: String(left), y1: String(top + plotH), x2: String(left + plotW), y2: String(top + plotH), stroke: "currentColor" }));
-  chart.appendChild(svg("line", { x1: String(left), y1: String(top), x2: String(left), y2: String(top + plotH), stroke: "currentColor" }));
-  chart.appendChild(svg("text", { x: String(left + plotW / 2), y: String(h - 8), "text-anchor": "middle", "font-size": "11", fill: "currentColor" }, `${scoreLabels.convenience.en} (0-${MAX_CONVENIENCE})`));
-  chart.appendChild(svg("text", { x: "10", y: String(top + plotH / 2), "text-anchor": "middle", "font-size": "11", fill: "currentColor", transform: `rotate(-90 10 ${top + plotH / 2})` }, `${scoreLabels.damage.en} (0-${MAX_DAMAGE})`));
-  chart.appendChild(svg("circle", { cx: String(cx), cy: String(cy), r: "6", fill: "orange", stroke: "currentColor" }));
-  chart.appendChild(svg("text", { x: String(w - right), y: String(top + 12), "text-anchor": "end", "font-size": "13", fill: "currentColor" }, `${scoreLabels.stars.en}: ${score.stars}`));
+  chart.classList.add("gm-chart");
+  chart.appendChild(svg("line", { x1: String(left), y1: String(top + plotH), x2: String(left + plotW), y2: String(top + plotH), stroke: CHART_AXIS }));
+  chart.appendChild(svg("line", { x1: String(left), y1: String(top), x2: String(left), y2: String(top + plotH), stroke: CHART_AXIS }));
+  chart.appendChild(svg("text", { x: String(left + plotW / 2), y: String(h - 8), "text-anchor": "middle", "font-size": "11", fill: CHART_TEXT }, `${scoreLabels.convenience.en} (0-${MAX_CONVENIENCE})`));
+  chart.appendChild(svg("text", { x: "10", y: String(top + plotH / 2), "text-anchor": "middle", "font-size": "11", fill: CHART_TEXT, transform: `rotate(-90 10 ${top + plotH / 2})` }, `${scoreLabels.damage.en} (0-${MAX_DAMAGE})`));
+  chart.appendChild(svg("circle", { cx: String(cx), cy: String(cy), r: "6", fill: ACCENT, stroke: CHART_TEXT }));
+  chart.appendChild(svg("text", { x: String(w - right), y: String(top + 12), "text-anchor": "end", "font-size": "13", fill: CHART_TEXT }, `${scoreLabels.stars.en}: ${score.stars}`));
   return chart;
 }
 
@@ -93,6 +110,7 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
   function button(control: ControlId, label: string, arg?: string): HTMLButtonElement {
     const b = el("button", label);
     b.type = "button";
+    b.dataset["key"] = `${control}:${arg ?? ""}`;
     b.addEventListener("click", () => options.act(control, arg));
     const list = buttons.get(control) ?? [];
     list.push(b);
@@ -102,17 +120,31 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
 
   function render(rawState: GameViewState): void {
     const state = rawState;
+    const focused = document.activeElement;
+    const focusKey = focused instanceof HTMLElement && root.contains(focused) ? (focused.dataset["key"] ?? null) : null;
     buttons.clear();
     root.replaceChildren();
 
+    const steps = el("ol");
+    steps.className = "gm-steps";
+    for (const p of PHASE_ORDER) {
+      const step = el("li", phaseNames[p].en);
+      if (p === state.phase) {
+        step.classList.add("gm-step-current");
+        step.setAttribute("aria-current", "step");
+      }
+      steps.appendChild(step);
+    }
     const heading = el("h2", phaseNames[state.phase].en);
     const instruction = el("p", phaseInstructions[state.phase].en);
-    root.append(heading, instruction);
+    instruction.className = "gm-instruction";
+    root.append(steps, heading, instruction);
 
     // Error or failure message; drawn here so the next render cannot erase it.
     const notice = noticeLine(state);
     if (notice !== null) {
       const alert = el("p", notice);
+      alert.className = "gm-notice";
       alert.setAttribute("role", "alert");
       root.appendChild(alert);
     }
@@ -162,6 +194,7 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
       if (state.score !== null) {
         root.appendChild(el("p", `${scoreLabels.convenience.en}: ${state.score.convenience}`));
         root.appendChild(el("p", `${scoreLabels.damage.en}: ${state.score.damage}`));
+        root.appendChild(stars(state.score.stars));
         root.appendChild(scoreChart(state.score));
       }
     }
@@ -170,16 +203,26 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
 
     // ViewPreset controls (R-APP1-11.1).
     const views = el("div");
+    views.className = "gm-views";
+    views.setAttribute("role", "group");
     for (const preset of options.presets) {
-      views.appendChild(button("preset", preset.label.en, preset.id));
+      const b = button("preset", preset.label.en, preset.id);
+      b.classList.add("gm-view-btn");
+      const active = preset.id === state.presetId;
+      b.setAttribute("aria-pressed", active ? "true" : "false");
+      if (active) b.classList.add("gm-active");
+      views.appendChild(b);
     }
     root.appendChild(views);
 
     // Every other button of `controlsFor`, in the order of CONTROL_IDS.
     const actions = el("div");
+    actions.className = "gm-actions";
     for (const id of CONTROL_IDS) {
       if (id === "preset" || id === "back") continue;
-      actions.appendChild(button(id, controlLabels[id].en));
+      const b = button(id, controlLabels[id].en);
+      b.classList.add(PRIMARY.includes(id) ? "gm-primary" : "gm-secondary");
+      actions.appendChild(b);
     }
     root.appendChild(actions);
 
@@ -198,10 +241,19 @@ export function createPanel(root: HTMLElement, options: PanelOptions): UiSink {
         b.disabled = !control.enabled;
       }
     }
+
+    // Keep keyboard focus on the same control after the rebuild (skipped if it is hidden or disabled).
+    if (focusKey !== null) {
+      for (const list of buttons.values()) {
+        const same = list.find((b) => b.dataset["key"] === focusKey && !b.hidden && !b.disabled);
+        if (same !== undefined) same.focus();
+      }
+    }
   }
 
   function card(state: GameViewState): HTMLElement {
     const box = el("section");
+    box.className = "gm-card";
     const attack = state.card;
     box.appendChild(el("h3", attack.name.en));
     box.appendChild(el("p", attack.attackerGoal.en));

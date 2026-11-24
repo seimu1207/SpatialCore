@@ -20,3 +20,4 @@ Types: `pbt` (bug found by PBT), `spec` (fixed through a spec), `vibe` (fixed du
 2026-11-23 | vibe | app-ghost-mansion: a corrupted non-UTF-8 byte in `ui.ts` broke the Vite build while the earlier checks looked fine | Remove the byte and rewrite the line as UTF-8; run `npm run build` after any large file write
 2026-11-23 | spec | app-ghost-mansion: the `createHistory` failure branch of the controller cannot be reached through the public API, because the judge functions reject an invalid Scenario first | Accepted gap: the branch stays as a guard and has no test
 2026-11-23 | behavior | app-ghost-mansion: a failed sub-agent run was marked completed by the orchestrator | Mark a task completed only after its "Done when" commands exit 0; leave a failed run as not completed
+- 2026-11-23 | Vibe | パネルの見た目（暗い配色、2カラム、5段階の表示、大きなボタン、いまの視点の強調）を整えた。3Dの高さを親要素に与え忘れると画面が細い帯になる（core の表示は親の高さに合わせる）ため、ホスト要素には最初から高さを書く | 公開URLでの人の確認で見つかった
