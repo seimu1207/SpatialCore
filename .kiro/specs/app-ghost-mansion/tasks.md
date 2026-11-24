@@ -284,7 +284,7 @@ Conventions for every task:
 - [x] 9. Checkpoint - Ensure all tests pass
   - Run `npm run typecheck`, `npm run lint`, `npm run check:sections`, `npm run check:schema`, `npm test`, `npm run build`, `npm run check:build`. All exit 0. Ask the user if questions arise.
 
-- [ ] 10. Verification gate (human approves; the agent must not mark this done)
+- [x] 10. Verification gate (human approves; the agent must not mark this done)
   - Scope: this is the first App spec of Unit 2. The gate includes the deploy check on the public URL.
   - **[Agent]** Run `npm test`, `npm run typecheck`, `npm run lint`, `npm run check:sections`, `npm run check:schema`, `npm run build`, `npm run check:build`; report each result and the test counts (test files, tests passed, how many are property tests, P-APP1-1 to P-APP1-12).
   - **[Agent]** Confirm the name test (R-FND-10.15) shows no Ghost Mansion name under `core/` and that `git status` shows no change under `core/` made by this spec (21.2). Confirm `docs/decision-log.md` holds the lines of tasks 1.1, 1.2, and 2.3. Report any missing line.
