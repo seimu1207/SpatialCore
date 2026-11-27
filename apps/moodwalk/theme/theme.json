@@ -1,0 +1,14 @@
+{
+  "background": "#120d1c",
+  "floor": "#2a2238",
+  "wall": "#3d3152",
+  "text": "#f5ecff",
+  "defaultNode": { "fill": "#1e1729", "border": "#8a6fb3" },
+  "defaultEdge": { "color": "#8a6fb3", "width": 0.03, "dashed": false },
+  "nodes": { "image": { "fill": "#1e1729", "border": "#c9a2ff" } },
+  "edges": {},
+  "effects": {
+    "sudden-brightening-fog": { "style": "fog", "color": "#ffd166", "opacity": 0.45 },
+    "same-mood-fog": { "style": "fog", "color": "#9fb4c7", "opacity": 0.5 }
+  }
+}

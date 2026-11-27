@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+﻿import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { makeTmpProject, repoRoot, runSensor, type TmpProject } from "./tmp-project.ts";
@@ -20,10 +20,10 @@ function make(files: Record<string, string>): TmpProject {
 }
 
 describe("schema CLI", { timeout: 60_000 }, () => {
-  it("real app Scenario_Files (Ghost Mansion preset, Moodwalk placeholder) pass in single-file runs (08.3)", () => {
+  it("real app Scenario_Files (Ghost Mansion preset, Moodwalk Demo_Board) pass in single-file runs (08.3)", () => {
     const files: [string, string][] = [
       ["ghost-mansion", "preset-mansion.json"],
-      ["moodwalk", "placeholder.json"],
+      ["moodwalk", "school-festival-haunted-house.json"],
     ];
     for (const [app, file] of files) {
       const r = runSensor(CLI, repoRoot, [`apps/${app}/scenarios/${file}`]);

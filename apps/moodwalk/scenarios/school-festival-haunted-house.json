@@ -1,0 +1,403 @@
+{
+  "edges": [],
+  "id": "school-festival-haunted-house",
+  "nodes": [
+    {
+      "attributes": {
+        "brightness": 0.3564486083026961,
+        "temperature": 0.008674172794117647
+      },
+      "front": {
+        "image": "sample:lanterns",
+        "text": {
+          "en": "Paper lanterns at the door",
+          "ja": "入口のちょうちん"
+        }
+      },
+      "id": "image-1",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 1.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "entrance"
+    },
+    {
+      "attributes": {
+        "brightness": 0.22147607843137254,
+        "temperature": -0.11764705882352941
+      },
+      "front": {
+        "image": "sample:corridor",
+        "text": {
+          "en": "Long dark corridor",
+          "ja": "長い暗い廊下"
+        }
+      },
+      "id": "image-2",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 6.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "corridor"
+    },
+    {
+      "attributes": {
+        "brightness": 0.21592112464256535,
+        "temperature": -0.10909543504901961
+      },
+      "front": {
+        "image": "sample:lamp",
+        "text": {
+          "en": "Flickering lamp",
+          "ja": "ちらつくランプ"
+        }
+      },
+      "id": "image-3",
+      "metadata": {},
+      "position": {
+        "x": 1.5,
+        "y": 1.3,
+        "z": 6.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "corridor"
+    },
+    {
+      "attributes": {
+        "brightness": 0.20832705882352942,
+        "temperature": -0.12941176470588237
+      },
+      "front": {
+        "image": "sample:desks",
+        "text": {
+          "en": "Rows of empty desks",
+          "ja": "空っぽの机の列"
+        }
+      },
+      "id": "image-4",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 11.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "classroom"
+    },
+    {
+      "attributes": {
+        "brightness": 0.21363046134599672,
+        "temperature": -0.11505182802287582
+      },
+      "front": {
+        "image": "sample:doll",
+        "text": {
+          "en": "Doll on the teacher's desk",
+          "ja": "先生の机の人形"
+        }
+      },
+      "id": "image-5",
+      "metadata": {},
+      "position": {
+        "x": 1.5,
+        "y": 1.3,
+        "z": 11.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "classroom"
+    },
+    {
+      "attributes": {
+        "brightness": 0.1990635294117647,
+        "temperature": -0.11764705882352941
+      },
+      "front": {
+        "image": "sample:piano",
+        "text": {
+          "en": "Old piano",
+          "ja": "古いピアノ"
+        }
+      },
+      "id": "image-6",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 16.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "music-room"
+    },
+    {
+      "attributes": {
+        "brightness": 0.5536847260518791,
+        "temperature": 0.22632889093137254
+      },
+      "front": {
+        "image": "sample:tea",
+        "text": {
+          "en": "Warm tea corner",
+          "ja": "あたたかいお茶の席"
+        }
+      },
+      "id": "image-7",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 21.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "rest-corner"
+    },
+    {
+      "attributes": {
+        "brightness": 0.5495082352941176,
+        "temperature": 0.2235294117647059
+      },
+      "front": {
+        "image": "sample:flowers",
+        "text": {
+          "en": "Paper flower wall",
+          "ja": "紙の花の壁"
+        }
+      },
+      "id": "image-8",
+      "metadata": {},
+      "position": {
+        "x": 1.5,
+        "y": 1.3,
+        "z": 21.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "rest-corner"
+    },
+    {
+      "attributes": {
+        "brightness": 0.08033725490196078,
+        "temperature": -0.1803921568627451
+      },
+      "front": {
+        "image": "sample:stairs",
+        "text": {
+          "en": "Stairs into the dark",
+          "ja": "暗闇へ続く階段"
+        }
+      },
+      "id": "image-9",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 26.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "basement"
+    },
+    {
+      "attributes": {
+        "brightness": 0.6057350763378267,
+        "temperature": 0.10178334354575164
+      },
+      "front": {
+        "image": "sample:daylight",
+        "text": {
+          "en": "Daylight at the exit",
+          "ja": "出口の日の光"
+        }
+      },
+      "id": "image-10",
+      "metadata": {},
+      "position": {
+        "x": -1.5,
+        "y": 1.3,
+        "z": 31.5
+      },
+      "rotation": {
+        "x": 0,
+        "y": 3.141592653589793,
+        "z": 0
+      },
+      "scale": {
+        "x": 1,
+        "y": 1,
+        "z": 1
+      },
+      "type": "image",
+      "zone": "exit"
+    }
+  ],
+  "schemaVersion": 1,
+  "title": {
+    "en": "School festival haunted house plan",
+    "ja": "学園祭お化け屋敷プラン"
+  },
+  "zones": [
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "entrance",
+      "label": {
+        "en": "Entrance",
+        "ja": "入口"
+      },
+      "order": 0
+    },
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "corridor",
+      "label": {
+        "en": "Dark corridor",
+        "ja": "暗い廊下"
+      },
+      "order": 1
+    },
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "classroom",
+      "label": {
+        "en": "Doll classroom",
+        "ja": "人形の教室"
+      },
+      "order": 2
+    },
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "music-room",
+      "label": {
+        "en": "Music room",
+        "ja": "音楽室"
+      },
+      "order": 3
+    },
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "rest-corner",
+      "label": {
+        "en": "Rest corner",
+        "ja": "休憩コーナー"
+      },
+      "order": 4
+    },
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "basement",
+      "label": {
+        "en": "Basement stairs",
+        "ja": "地下への階段"
+      },
+      "order": 5
+    },
+    {
+      "elevation": 0,
+      "enclosed": false,
+      "id": "exit",
+      "label": {
+        "en": "Exit",
+        "ja": "出口"
+      },
+      "order": 6
+    }
+  ]
+}

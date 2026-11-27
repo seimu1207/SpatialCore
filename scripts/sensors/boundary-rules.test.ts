@@ -281,6 +281,55 @@ describe("R-FND-04.1-04.7 boundary import rules", () => {
     });
   });
 
+  describe("R-APP2-14.1-14.2 moodwalk model scope", () => {
+    const file = "apps/moodwalk/model/a.ts";
+    const rejected = [
+      "three",
+      "react",
+      "@react-three/fiber",
+      "../../../core/view/start-view.tsx",
+      "../../../core/view/scene/x.ts",
+      "../../../core/view/demo/main.tsx",
+      "../../../core/view/helpers/../scene/x.ts",
+      "../../../core/model/../view/scene/x.ts",
+      "./x.test.ts",
+      "../../ghost-mansion/x.ts",
+    ];
+    for (const spec of rejected) {
+      for (const [form, make] of Object.entries(FORMS)) {
+        it(`R-APP2-14.2 model rejects ${spec}: ${form}`, () => {
+          expectReported(make(spec), file, spec);
+        });
+      }
+    }
+    for (const spec of ["../../../core/model/series.ts", "../../../core/view/helpers/camera-path.ts", "./mood.ts"]) {
+      for (const [form, make] of Object.entries(FORMS)) {
+        it(`R-APP2-14.2 model accepts ${spec}: ${form}`, () => {
+          expectNotReported(make(spec), file);
+        });
+      }
+    }
+    it("R-APP2-14.1 App page rejects core/view/demo and test files with Moodwalk messages", () => {
+      const demo = boundaryMessages(`import "../../core/view/demo/main.tsx";\n`, "apps/moodwalk/main.ts");
+      expect(demo.length).toBeGreaterThan(0);
+      expect(demo.every((m) => m.message.includes("moodwalk") && !m.message.includes("ghost-mansion"))).toBe(true);
+      const test = boundaryMessages(`import "./x.test.ts";\n`, "apps/moodwalk/main.ts");
+      expect(test.length).toBeGreaterThan(0);
+      expect(test.every((m) => m.message.includes("moodwalk") && !m.message.includes("ghost-mansion"))).toBe(true);
+    });
+    it("R-APP2-14.1 model demo and test-file rejections carry Moodwalk messages", () => {
+      for (const spec of ["../../../core/view/demo/main.tsx", "./x.test.ts"]) {
+        const msgs = boundaryMessages(`import "${spec}";\n`, file);
+        expect(msgs.length).toBeGreaterThan(0);
+        expect(msgs.some((m) => m.message.includes("moodwalk must not import"))).toBe(true);
+        expect(msgs.some((m) => m.message.includes("ghost-mansion must not"))).toBe(false);
+      }
+    });
+    it("R-APP2-14.1 App page still allows start-view and core/view", () => {
+      expectNotReported(`import "../../core/view/start-view.tsx";\nimport "three";\n`, "apps/moodwalk/main.ts");
+    });
+  });
+
   describe("R-FND-04.6 clean file", () => {
     it("R-FND-04.6 a clean file reports no finding at all", () => {
       const msgs = lintText(`export const answer: number = 42;\n`, "core/model/x.ts");

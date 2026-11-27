@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "id": "mood-rules",
+  "propagation": { "pass": [], "stop": [] },
+  "effectRules": [
+    { "id": "mark-sudden-brightening", "effect": "sudden-brightening-fog", "source": { "kind": "shifts", "attribute": "brightness" } },
+    { "id": "mark-same-mood", "effect": "same-mood-fog", "source": { "kind": "longRuns", "attribute": "sameMood" } }
+  ]
+}

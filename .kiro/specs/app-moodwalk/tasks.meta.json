@@ -1,0 +1,873 @@
+{
+  "pbtResults": {
+    "2.3 Write property test for the analyzer": {
+      "status": "passed",
+      "lastRunTimestamp": 1795697498837
+    },
+    "2.4 Write property test for brightness monotonicity": {
+      "status": "passed",
+      "lastRunTimestamp": 1795697827163
+    },
+    "2.5 Write property test for color temperature": {
+      "status": "passed",
+      "lastRunTimestamp": 1795697977016
+    },
+    "5.10 Write property test for the walkthrough link": {
+      "status": "passed",
+      "lastRunTimestamp": 1795699515228
+    },
+    "5.3 Write property test for depth is order": {
+      "status": "passed",
+      "lastRunTimestamp": 1795699577837
+    },
+    "5.5 Write property test for shift-check determinism": {
+      "status": "passed",
+      "lastRunTimestamp": 1795699610546
+    },
+    "6.2 Write property test for adding an image": {
+      "status": "passed",
+      "lastRunTimestamp": 1795699667428
+    },
+    "6.3 Write property test for save and load": {
+      "status": "passed",
+      "lastRunTimestamp": 1795699895482
+    },
+    "5.6 Write property test for transforms and node order": {
+      "status": "passed",
+      "lastRunTimestamp": 1795699908059
+    },
+    "5.7 Write property test for threshold monotonicity": {
+      "status": "passed",
+      "lastRunTimestamp": 1795700013105
+    },
+    "5.8 Write property test for marks and flag-effect pairing": {
+      "status": "passed",
+      "lastRunTimestamp": 1795700201564
+    }
+  },
+  "executionHistory": {
+    "1.1 Add the Moodwalk lint scopes and the six bans": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696585788
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696603581
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696841324
+      }
+    ],
+    "1.2 Replace the placeholder Scenario_File with the Demo_Board file": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696586045
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696862126
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697084708
+      }
+    ],
+    "2.1 Implement fixed names, pixels, the Mood_Analyzer, and the fallback switch": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696586234
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696862496
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697085463
+      }
+    ],
+    "2.2 Add the pixel generators in `model/arbitraries.ts`": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696586453
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697110941
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697400149
+      }
+    ],
+    "2.3 Write property test for the analyzer": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696586662
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697416638
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697698300
+      }
+    ],
+    "2.4 Write property test for brightness monotonicity": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696586820
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697723888
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697876794
+      }
+    ],
+    "2.5 Write property test for color temperature": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696587054
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697891206
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698013544
+      }
+    ],
+    "2.6 Implement `model/sample-images.ts`, tune the recipes, and fix the Demo_Board attributes": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696587310
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697417016
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697698785
+      }
+    ],
+    "3. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696587541
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698028308
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698151414
+      }
+    ],
+    "4.1 Implement `model/board-settings.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696587754
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698167772
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698510243
+      }
+    ],
+    "4.2 Write property test for the settings schema": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696587971
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698544591
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698890414
+      }
+    ],
+    "4.3 Add the rule, settings, and theme files and the bundle": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696588215
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698168336
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698508914
+      }
+    ],
+    "4.4 Implement `model/board-data.ts` with loading example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696588490
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698544970
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698891221
+      }
+    ],
+    "5.1 Implement `model/layout.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696588723
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698168967
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698509647
+      }
+    ],
+    "5.2 Add the board generators in `model/arbitraries.ts`": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696588967
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699263771
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699419850
+      }
+    ],
+    "5.3 Write property test for depth is order": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696589217
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699441801
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699679455
+      }
+    ],
+    "5.4 Implement `model/shift-check.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696589525
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698545673
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698892033
+      }
+    ],
+    "5.5 Write property test for shift-check determinism": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696589717
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699442049
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699679663
+      }
+    ],
+    "5.6 Write property test for transforms and node order": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696589929
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699717794
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699917895
+      }
+    ],
+    "5.7 Write property test for threshold monotonicity": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696590176
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699940516
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700074202
+      }
+    ],
+    "5.8 Write property test for marks and flag-effect pairing": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696590435
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700095476
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700250544
+      }
+    ],
+    "5.9 Implement `model/walk.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696590678
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698546476
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698892651
+      }
+    ],
+    "5.10 Write property test for the walkthrough link": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696590922
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699442277
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699680475
+      }
+    ],
+    "5.11 Write the Demo_Board example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696591120
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699940807
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700075211
+      }
+    ],
+    "6.1 Implement `model/commands.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696591348
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698546967
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698893613
+      }
+    ],
+    "6.2 Write property test for adding an image": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696591607
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699443146
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699681271
+      }
+    ],
+    "6.3 Write property test for save and load": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696591840
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699717961
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699918979
+      }
+    ],
+    "6.4 Implement `model/image-store.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696592110
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698941316
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699243588
+      }
+    ],
+    "6.5 Implement `model/controls.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696592357
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698942227
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699243844
+      }
+    ],
+    "6.6 Implement `model/curve-layout.ts` with example tests": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696592622
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699264570
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699419073
+      }
+    ],
+    "7. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696592822
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700264718
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700349662
+      }
+    ],
+    "8.1 Implement `browser/images.ts` and `browser/samples.ts`": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696593067
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700363831
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700609241
+      }
+    ],
+    "9.1 Extend `apps/moodwalk/text.ts` with the UI texts": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696593293
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700364871
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700609695
+      }
+    ],
+    "9.2 Implement `controller.ts`: state, start, and zone operations": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696593552
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700636259
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700914564
+      }
+    ],
+    "9.3 Extend `controller.ts`: gestures, undo and redo, settings, marks, and viewpoints": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696593761
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795701111662
+      },
+      {
+        "executionId": "3f196116-f446-4e47-8292-2ee2fe6420a1",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795701649522
+      },
+      {
+        "executionId": "3f196116-f446-4e47-8292-2ee2fe6420a1",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795701779819
+      }
+    ],
+    "9.4 Extend `controller.ts`: adding images and the walkthrough": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696593961
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779451529
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779882386
+      }
+    ],
+    "9.5 Write example tests for the controller: start, zones, gestures, settings, marks": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696594156
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779452115
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779884077
+      }
+    ],
+    "9.6 Write example tests for the controller: images, walkthrough, errors": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696594397
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779912476
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779916009
+      }
+    ],
+    "10.1 Implement `ui.ts` controls and the page shell": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696594620
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700934132
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795701096984
+      }
+    ],
+    "10.2 Implement the SVG Curve_Panel in `ui.ts`": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696594825
+      },
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795701112704
+      },
+      {
+        "executionId": "3f196116-f446-4e47-8292-2ee2fe6420a1",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795701627757
+      }
+    ],
+    "10.3 Implement the startup in `main.ts` and remove the placeholder": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696595097
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795780371713
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795780750246
+      }
+    ],
+    "10.4 Add drag and drop to `main.ts` and measure the bundle": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696595308
+      },
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795780751793
+      },
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781318966
+      }
+    ],
+    "11.1 Record fallbacks and lessons": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696595523
+      },
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781335109
+      },
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781371147
+      }
+    ],
+    "12. Checkpoint - Ensure all tests pass": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696595746
+      },
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781387741
+      },
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781587408
+      }
+    ],
+    "13. Verification gate (human approves; the agent must not mark this done)": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795696595978
+      }
+    ],
+    "1. Repo-foundation changes": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795697085029
+      }
+    ],
+    "2. Mood analyzer and sample images": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698013834
+      }
+    ],
+    "4. Board settings, data files, and loading": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795698891555
+      }
+    ],
+    "6. Commands, image store, controls, and curve layout": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795699919142
+      }
+    ],
+    "5. Route layout, Shift_Check, and Linked_Timeline": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700250710
+      }
+    ],
+    "8. Browser image reading and samples": [
+      {
+        "executionId": "fd05f807-2676-444f-81b1-d17911feea20",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795700609525
+      }
+    ],
+    "9. Controller": [
+      {
+        "executionId": "b4c4374c-3ff2-4527-ac32-78bb3ab79898",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795779916397
+      }
+    ],
+    "10. DOM panel and page wiring": [
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781319367
+      }
+    ],
+    "11. Decision records": [
+      {
+        "executionId": "4863864a-9260-4a97-b2b7-044b61e269bd",
+        "chatSessionId": "sess_3fe36a2e-d4e6-4e2b-9cb2-f0a9e38d450f",
+        "timestamp": 1795781371523
+      }
+    ]
+  }
+}

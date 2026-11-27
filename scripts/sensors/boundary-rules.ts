@@ -153,6 +153,24 @@ const modelViewBan = ban(
   "import-boundary: the game model may import only settings-schema.ts and theme-schema.ts from core/view.",
 );
 
+// Moodwalk App files: own messages, so they do not name ghost-mansion.
+const ghostMansionBan = ban(GHOST_MANSION_SEGMENT, "import-boundary: moodwalk must not import from ghost-mansion.");
+const moodwalkDemoBan = ban(`core${S}view${S}demo`, "import-boundary: moodwalk must not import core/view/demo.");
+const moodwalkTestFileBan = ban(`\\.test\\.ts$`, "import-boundary: moodwalk must not import a *.test.ts file.");
+// The Moodwalk model may import only View_Helpers from core/view.
+const moodwalkModelViewBan = ban(
+  `core${S}view${S}(?!helpers${S})`,
+  "import-boundary: the moodwalk model may import only View_Helpers (core/view/helpers/) from core/view.",
+);
+const moodwalkHelpersDotDotBan = ban(
+  `core${S}view${S}helpers${S}(?:.*${S})?\\.\\.(?:${S}|$)`,
+  "import-boundary: the moodwalk model must not use '..' after core/view/helpers/.",
+);
+const moodwalkModelDotDotBan = ban(
+  `core${S}model${S}(?:.*${S})?\\.\\.(?:${S}|$)`,
+  "import-boundary: the moodwalk model must not use '..' after core/model/.",
+);
+
 const TS = "*.{ts,tsx}";
 
 export function boundaryConfigs(): Linter.Config[] {
@@ -175,11 +193,21 @@ export function boundaryConfigs(): Linter.Config[] {
       [],
       [moodwalkBan, demoBan, testFileBan, ...modelPackageBans, modelViewBan],
     ),
+    scope("app-moodwalk", [`apps/moodwalk/**/${TS}`], [], [ghostMansionBan, moodwalkDemoBan, moodwalkTestFileBan]),
+    // Bans are repeated: a later flat-config entry replaces the rule options of app-moodwalk.
     scope(
-      "app-moodwalk",
-      [`apps/moodwalk/**/${TS}`],
+      "app-moodwalk-model",
+      [`apps/moodwalk/model/**/${TS}`],
       [],
-      [ban(GHOST_MANSION_SEGMENT, "import-boundary: moodwalk must not import from ghost-mansion.")],
+      [
+        ghostMansionBan,
+        moodwalkDemoBan,
+        moodwalkTestFileBan,
+        ...modelPackageBans,
+        moodwalkModelViewBan,
+        moodwalkHelpersDotDotBan,
+        moodwalkModelDotDotBan,
+      ],
     ),
     scope("apps-other", [`apps/**/${TS}`], ["apps/ghost-mansion/**", "apps/moodwalk/**"], []),
     scope("scripts", [`scripts/**/${TS}`], [], []),

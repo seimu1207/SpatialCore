@@ -3,10 +3,33 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title></title>
+    <title>Moodwalk</title>
+    <style>
+      #app #header { display: flex; align-items: baseline; gap: 1rem; }
+      #app #header h1 { margin: 0.25rem 0; }
+      #app #main { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
+      #app #view { flex: 1 1 28rem; min-width: 18rem; width: 100%; height: 60vh; aspect-ratio: 16 / 9; }
+      #app #panel { flex: 0 1 22rem; }
+      #app #curve { width: 100%; }
+      #app #notice { min-height: 1.5em; }
+      #app #panel .mw-start { display: block; width: 100%; font-size: 1.4rem; padding: 0.75rem 1rem; }
+      #app #panel .mw-row, #app #panel .mw-walk, #app #panel .mw-section { margin: 0.5rem 0; }
+      #app #panel button[aria-pressed="true"] { font-weight: bold; outline: 2px solid currentColor; }
+      #app #panel .mw-zones { list-style: none; padding: 0; margin: 0.25rem 0; }
+      #app #panel .mw-setting { display: block; margin: 0.25rem 0; }
+      #app #panel .mw-field-message { display: block; min-height: 1.2em; color: #b00020; }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="header"><h1>Moodwalk</h1></div>
+      <div id="main">
+        <div id="view"></div>
+        <div id="panel"></div>
+      </div>
+      <div id="notice" role="status"></div>
+      <div id="curve"></div>
+    </div>
     <script type="module" src="/apps/moodwalk/main.ts"></script>
   </body>
 </html>
