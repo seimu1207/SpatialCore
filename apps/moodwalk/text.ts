@@ -154,3 +154,30 @@ export function msgFileUnreadable(file: string): LocalizedText {
 export function msgFileNoPixels(file: string): LocalizedText {
   return t(`${file}: the image has no visible pixels.`, `${file}: 画像に見える画素がありません。`);
 }
+
+// Page sections, helper text, and the curve legend (layout polish)
+export const secWalkthrough = t("Walkthrough", "ウォークスルー");
+export const secView = t("View", "視点");
+export const secImages = t("Images", "画像");
+export const secZones = t("Zones", "ゾーン");
+export const secEdit = t("Edit tools", "編集ツール");
+export const secSettings = t("Settings", "設定");
+export const secMarks = t("Marks", "印");
+export const secCurve = t("Mood curve", "雰囲気カーブ");
+export const noticeLabel = t("Messages", "メッセージ");
+export const helpShiftThreshold = t(
+  "A zone is flagged when its brightness rises by more than this from the previous zone.",
+  "前のゾーンより明るさがこの値を超えて上がると、印が付きます。",
+);
+export const helpRunTolerance = t(
+  "Zones whose brightness differs by at most this count as the same mood.",
+  "明るさの差がこの値以下のゾーンは、同じ雰囲気として数えます。",
+);
+export const helpMinRunLength = t(
+  "A run of this many same-mood zones in a row is flagged.",
+  "同じ雰囲気がこの数だけ続くと、印が付きます。",
+);
+export const marksEmpty = t("Nothing to mark right now.", "いま印を付けるものはありません。");
+export const legendTitle = t("Flag colors", "印の色");
+export const legendSudden = t("Orange: sudden brightening", "オレンジ: 急に明るくなる");
+export const legendSame = t("Purple: same mood too long", "紫: 同じ雰囲気が長すぎる");

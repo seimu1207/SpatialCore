@@ -5,31 +5,90 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Moodwalk</title>
     <style>
-      #app #header { display: flex; align-items: baseline; gap: 1rem; }
-      #app #header h1 { margin: 0.25rem 0; }
-      #app #main { display: flex; flex-wrap: wrap; gap: 1rem; align-items: flex-start; }
-      #app #view { flex: 1 1 28rem; min-width: 18rem; width: 100%; height: 60vh; aspect-ratio: 16 / 9; }
-      #app #panel { flex: 0 1 22rem; }
-      #app #curve { width: 100%; }
-      #app #notice { min-height: 1.5em; }
-      #app #panel .mw-start { display: block; width: 100%; font-size: 1.4rem; padding: 0.75rem 1rem; }
-      #app #panel .mw-row, #app #panel .mw-walk, #app #panel .mw-section { margin: 0.5rem 0; }
-      #app #panel button[aria-pressed="true"] { font-weight: bold; outline: 2px solid currentColor; }
-      #app #panel .mw-zones { list-style: none; padding: 0; margin: 0.25rem 0; }
-      #app #panel .mw-setting { display: block; margin: 0.25rem 0; }
-      #app #panel .mw-field-message { display: block; min-height: 1.2em; color: #b00020; }
+      body:has(#app) { margin: 0; background: #151412; }
+      #app {
+        --bg: #151412; --panel: #1b1a17; --rule: #36342e; --text: #ebe8e0; --muted: #a8a397;
+        --amber: #ffb000; --teal: #3fc1b0; --sudden: #ff6b5e; --same: #6aa8ff;
+        --mono: ui-monospace, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+        box-sizing: border-box; min-height: 100vh; background: var(--bg); color: var(--text);
+        font: 15px/1.45 system-ui, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      }
+      #app a { color: var(--teal); }
+      #app #header { display: flex; align-items: center; gap: 1rem; padding: 0.4rem 1rem; background: #0f0e0c; border-bottom: 1px solid var(--rule); font-family: var(--mono); font-size: 0.8rem; }
+      #app #header h1 { margin: 0; font: 700 0.95rem/1 var(--mono); letter-spacing: 0.14em; text-transform: uppercase; color: var(--amber); }
+      #app #main { display: grid; grid-template-columns: minmax(0, 1fr) 19rem; grid-template-areas: "stage side" "curve curve"; }
+      #app #stage { grid-area: stage; min-width: 0; padding: 0.75rem; border-right: 1px solid var(--rule); }
+      #app #view { width: 100%; aspect-ratio: 16 / 9; background: #0e0d0b; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+      #app #curve-card { grid-area: curve; min-width: 0; padding: 0.5rem 0.75rem 1rem; background: var(--panel); border-top: 1px solid var(--rule); }
+      #app #curve { width: 100%; color: #cfcabd; }
+      #app #curve polyline { stroke: var(--teal); }
+      #app #curve circle[fill="currentColor"] { fill: var(--teal); }
+      #app #curve text { font-family: var(--mono); }
+      #app #side { grid-area: side; min-width: 0; background: var(--panel); max-height: calc(100vh - 2.6rem); overflow-y: auto; }
+      #app #notice { min-height: 2.5em; margin: 0; padding: 0.5rem 0.75rem; background: #0f0e0c; border-bottom: 1px solid var(--rule); border-left: 3px solid var(--teal); font-family: var(--mono); font-size: 0.8rem; }
+      #app #notice:empty { border-left-color: var(--rule); }
+      #app h2.mw-heading { margin: 0 0 0.5rem; font: 600 0.7rem/1.2 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
+      #app #curve-card h2.mw-heading { margin: 0.25rem 0 0.4rem; }
+      #app .mw-card { margin: 0; padding: 0.75rem; border-bottom: 1px solid var(--rule); }
+      #app #panel button { font: inherit; font-size: 0.9rem; padding: 0.35rem 0.7rem; color: var(--text); background: #26241f; border: 1px solid #4a473f; border-radius: 2px; cursor: pointer; }
+      #app #panel button:hover:not(:disabled) { background: #33312a; border-color: #6a665b; }
+      #app #panel button:focus-visible, #app #panel input:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+      #app #panel button:disabled { opacity: 0.35; cursor: not-allowed; }
+      #app #panel button[aria-pressed="true"] { background: #0f3b36; border-color: var(--teal); color: #9bf0e3; }
+      #app #panel .mw-start { display: flex; align-items: center; justify-content: center; gap: 0.6rem; width: 100%; box-sizing: border-box; padding: 0.7rem 1rem; font-family: var(--mono); font-size: 1rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #1a1200; background: var(--amber); border-color: var(--amber); }
+      #app #panel .mw-start::before { content: "\25B6"; font-size: 0.85em; }
+      #app #panel .mw-start:hover:not(:disabled) { background: #ffc233; border-color: #ffc233; }
+      #app #panel .mw-start:disabled { background: #2a2822; border-color: #4a473f; color: var(--muted); }
+      #app .mw-walk { display: flex; margin-top: 0.5rem; }
+      #app .mw-walk button + button, #app .mw-seg button + button { margin-left: -1px; }
+      #app .mw-walk button { flex: 1 1 0; }
+      #app .mw-row { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+      #app .mw-row:first-of-type { margin-top: 0; }
+      #app [aria-labelledby="mw-h-view"] .mw-row, #app [aria-labelledby="mw-h-edit-tools"] .mw-row { display: flex; flex-wrap: nowrap; gap: 0; }
+      #app [aria-labelledby="mw-h-view"] .mw-row button, #app [aria-labelledby="mw-h-edit-tools"] .mw-row button { flex: 1 1 0; border-radius: 0; padding: 0.35rem 0.3rem; font-size: 0.8rem; }
+      #app [aria-labelledby="mw-h-view"] .mw-row button + button, #app [aria-labelledby="mw-h-edit-tools"] .mw-row button + button { margin-left: -1px; }
+      #app [aria-labelledby="mw-h-view"] .mw-row button:first-child, #app [aria-labelledby="mw-h-edit-tools"] .mw-row button:first-child { border-radius: 2px 0 0 2px; }
+      #app [aria-labelledby="mw-h-view"] .mw-row button:last-child, #app [aria-labelledby="mw-h-edit-tools"] .mw-row button:last-child { border-radius: 0 2px 2px 0; }
+      #app .mw-status { min-height: 1.4em; margin: 0.5rem 0 0; font-family: var(--mono); font-size: 0.8rem; color: var(--amber); }
+      #app .mw-hint { margin: 0.4rem 0 0; font-size: 0.82rem; color: var(--muted); }
+      #app .mw-zones { list-style: none; padding: 0; margin: 0.25rem 0 0.5rem; border-top: 1px solid var(--rule); }
+      #app .mw-zone { display: flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0; border-bottom: 1px solid var(--rule); }
+      #app .mw-zone-target { flex: 1 1 auto; text-align: left; }
+      #app #panel .mw-small { font-size: 0.75rem; padding: 0.2rem 0.45rem; }
+      #app .mw-tag { padding: 0 0.4rem; font: 700 0.65rem/1.5 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: #0e0d0b; background: var(--teal); border-radius: 2px; }
+      #app .mw-setting { margin: 0 0 0.75rem; }
+      #app .mw-label { display: block; font: 600 0.8rem var(--mono); }
+      #app #panel input[type="text"] { box-sizing: border-box; width: 5rem; margin: 0.25rem 0; padding: 0.25rem 0.4rem; font: 0.9rem var(--mono); color: var(--text); background: #0f0e0c; border: 1px solid #4a473f; border-radius: 2px; }
+      #app #panel input[aria-invalid="true"] { border-color: var(--sudden); }
+      #app #panel input:disabled { opacity: 0.5; }
+      #app .mw-setting .mw-hint { display: block; margin: 0; }
+      #app .mw-field-message { display: block; min-height: 1.2em; font-size: 0.82rem; color: #ff9a8f; }
+      #app .mw-flags { margin: 0.5rem 0 0; padding-left: 1.2rem; font-size: 0.85rem; }
+      #app .mw-legend { display: flex; flex-wrap: wrap; gap: 1rem; list-style: none; margin: 0.5rem 0 0; padding: 0; font: 0.75rem var(--mono); }
+      #app .mw-legend li { display: flex; align-items: center; gap: 0.4rem; }
+      #app .mw-swatch { display: inline-block; width: 0.8rem; height: 0.8rem; border-radius: 1px; }
+      #app .mw-legend-sudden .mw-swatch { background: var(--sudden); }
+      #app .mw-legend-same .mw-swatch { background: var(--same); }
+      @media (max-width: 62rem) {
+        #app #main { grid-template-columns: minmax(0, 1fr); grid-template-areas: "stage" "side" "curve"; }
+        #app #stage { border-right: 0; }
+        #app #side { max-height: none; overflow: visible; border-top: 1px solid var(--rule); }
+      }
     </style>
   </head>
   <body>
     <div id="app">
       <div id="header"><h1>Moodwalk</h1></div>
       <div id="main">
-        <div id="view"></div>
-        <div id="panel"></div>
+        <div id="stage">
+          <div id="view"></div>
+        </div>
+        <div id="curve-card"><div id="curve"></div></div>
+        <div id="side">
+          <div id="notice" role="status"></div>
+          <div id="panel"></div>
+        </div>
       </div>
-      <div id="notice" role="status"></div>
-      <div id="curve"></div>
     </div>
     <script type="module" src="/apps/moodwalk/main.ts"></script>
-  </body>
-</html>
+  </body></html>

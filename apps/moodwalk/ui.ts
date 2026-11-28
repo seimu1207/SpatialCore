@@ -62,12 +62,12 @@ function part(root: HTMLElement, id: string): HTMLElement {
 }
 
 const SVG_NS = "http://www.w3.org/2000/svg";
-const CURVE_WIDTH = 640;
-const CHART_HEIGHT = 110;
+const CURVE_WIDTH = 1120;
+const CHART_HEIGHT = 84;
 const CHART_GAP = 22;
 const LABEL_ROW = 54;
-const COLOR_SUDDEN = "#d9822b";
-const COLOR_SAME = "#7a5bd1";
+const COLOR_SUDDEN = "#ff6b5e";
+const COLOR_SAME = "#6aa8ff";
 
 function svg<K extends keyof SVGElementTagNameMap>(
   tag: K,
@@ -177,9 +177,8 @@ export function renderCurvePanel(container: HTMLElement, state: BoardViewState):
         x2: markerLabel.x,
         y1: 0,
         y2: chartsHeight,
-        stroke: "#e0245e",
-        "stroke-width": 2,
-        "stroke-dasharray": "4 3",
+        stroke: "#ffb000",
+        "stroke-width": 3,
         class: "mw-marker",
       }),
     );
@@ -202,6 +201,31 @@ export function renderCurvePanel(container: HTMLElement, state: BoardViewState):
     }
   }
   container.appendChild(list);
+
+  // Legend for the flag colors.
+  const legend = el("ul", undefined, "mw-legend");
+  legend.setAttribute("aria-label", text.legendTitle.en);
+  for (const [label, kind] of [
+    [text.legendSudden, "sudden"],
+    [text.legendSame, "same"],
+  ] as const) {
+    const item = el("li", undefined, `mw-legend-${kind}`);
+    item.append(el("span", undefined, "mw-swatch"), el("span", label));
+    legend.appendChild(item);
+  }
+  container.appendChild(legend);
+}
+
+/** A titled section: `<section>` with an `h2` and a body element for the controls. */
+function section(parent: HTMLElement, heading: LocalizedText): HTMLElement {
+  const box = el("section", undefined, "mw-card");
+  const id = `mw-h-${heading.en.toLowerCase().replace(/[^a-z]+/g, "-")}`;
+  const h = el("h2", heading, "mw-heading");
+  h.id = id;
+  box.setAttribute("aria-labelledby", id);
+  box.appendChild(h);
+  parent.appendChild(box);
+  return box;
 }
 
 export function createUi(root: HTMLElement, actions: UiActions): UiSink {
@@ -209,8 +233,12 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
   const curve = part(root, "curve");
   const notice = part(root, "notice");
   panel.replaceChildren();
+  notice.setAttribute("aria-label", text.noticeLabel.en);
+  const curveHeading = el("h2", text.secCurve, "mw-heading");
+  curve.before(curveHeading);
 
-  // Walk controls: "Start walkthrough" first and largest (R-APP2-13.7).
+  // Walkthrough: "Start walkthrough" first and largest (R-APP2-13.7), then the status line beside it.
+  const walkBox = section(panel, text.secWalkthrough);
   const walkRow = el("div", undefined, "mw-walk");
   const buttons = new Map<ControlId, HTMLButtonElement>();
   const add = (id: ControlId, label: LocalizedText, parent: HTMLElement, className?: string): void => {
@@ -218,14 +246,15 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
     buttons.set(id, b);
     parent.appendChild(b);
   };
-  add("start", text.startWalkthrough, walkRow, "mw-start");
+  add("start", text.startWalkthrough, walkBox, "mw-start");
   add("pause", text.pause, walkRow);
   add("resume", text.resume, walkRow);
   add("stop", text.stop, walkRow);
   const status = el("p", undefined, "mw-status");
-  panel.append(walkRow, status);
+  walkBox.append(walkRow, status);
 
   // Viewpoints.
+  const viewBox = section(panel, text.secView);
   const viewRow = el("div", undefined, "mw-row");
   const viewButtons = new Map<string, HTMLButtonElement>();
   for (const [id, label] of [
@@ -236,10 +265,11 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
     viewButtons.set(id, b);
     viewRow.appendChild(b);
   }
-  panel.appendChild(viewRow);
+  viewBox.appendChild(viewRow);
 
   // Images.
-  const imageSection = el("div", undefined, "mw-section");
+  const imageBox = section(panel, text.secImages);
+  const imageRow = el("div", undefined, "mw-row");
   const picker = el("input");
   picker.type = "file";
   picker.multiple = true;
@@ -254,14 +284,18 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
   buttons.set("addImages", addImages);
   const removeImage = button(text.removeImage, () => actions.act("removeImage"));
   buttons.set("removeImage", removeImage);
-  imageSection.append(addImages, picker, el("span", text.dropHint, "mw-hint"), removeImage);
-  const targetLabel = el("p", text.addImagesTo);
+  imageRow.append(addImages, picker, removeImage);
+  imageBox.append(imageRow, el("p", text.dropHint, "mw-hint"));
+
+  // Zones.
+  const zoneBox = section(panel, text.secZones);
   const zoneList = el("ul", undefined, "mw-zones");
   const addZone = button(text.addZone, () => actions.act("addZone"));
   buttons.set("addZone", addZone);
-  panel.append(imageSection, targetLabel, zoneList, addZone);
+  zoneBox.append(el("p", text.addImagesTo, "mw-hint"), zoneList, addZone);
 
   // Gizmo mode, undo, redo.
+  const editBox = section(panel, text.secEdit);
   const editRow = el("div", undefined, "mw-row");
   const rotate = button(text.rotate, () => actions.act("rotateMode"));
   const scale = button(text.scale, () => actions.act("scaleMode"));
@@ -270,30 +304,45 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
   editRow.append(rotate, scale);
   add("undo", text.undo, editRow);
   add("redo", text.redo, editRow);
-  panel.appendChild(editRow);
+  editBox.appendChild(editRow);
 
-  // Settings, each with its own field message.
-  const settingsBox = el("div", undefined, "mw-section");
+  // Settings, each with a label (for/id), helper text, and its own field message.
+  const settingsBox = section(panel, text.secSettings);
   const inputs = new Map<SettingField, HTMLInputElement>();
   const messages = new Map<SettingField, HTMLElement>();
+  const helps: Record<SettingField, LocalizedText> = {
+    shiftThreshold: text.helpShiftThreshold,
+    runTolerance: text.helpRunTolerance,
+    minRunLength: text.helpMinRunLength,
+  };
   for (const { field, label } of SETTING_FIELDS) {
-    const row = el("label", undefined, "mw-setting");
+    const row = el("div", undefined, "mw-setting");
+    const inputId = `mw-setting-${field}`;
+    const helpId = `${inputId}-help`;
+    const messageId = `${inputId}-message`;
+    const labelEl = el("label", label, "mw-label");
+    labelEl.htmlFor = inputId;
     const input = el("input");
+    input.id = inputId;
     input.type = "text";
     input.inputMode = "decimal";
+    input.setAttribute("aria-describedby", `${helpId} ${messageId}`);
     input.addEventListener("change", () => actions.setSetting(field, input.value));
+    const help = el("span", helps[field], "mw-hint");
+    help.id = helpId;
     const message = el("span", undefined, "mw-field-message");
+    message.id = messageId;
     message.setAttribute("role", "alert");
-    row.append(el("span", label), input, message);
+    row.append(labelEl, input, help, message);
     inputs.set(field, input);
     messages.set(field, message);
     settingsBox.appendChild(row);
   }
-  panel.appendChild(settingsBox);
 
   // Marks.
-  const marksBox = el("div", undefined, "mw-section");
-  panel.appendChild(marksBox);
+  const marksCard = section(panel, text.secMarks);
+  const marksBox = el("div", undefined, "mw-row");
+  marksCard.appendChild(marksBox);
 
   const render = (state: BoardViewState): void => {
     for (const [id, b] of buttons) b.disabled = !state.controls[id];
@@ -304,14 +353,14 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
 
     zoneList.replaceChildren();
     for (const zone of state.zones) {
-      const item = el("li");
-      const target = button(zone.label, () => actions.chooseTarget(zone.id));
+      const item = el("li", undefined, "mw-zone");
+      const target = button(zone.label, () => actions.chooseTarget(zone.id), "mw-zone-target");
       target.setAttribute("aria-pressed", String(zone.id === state.targetZone));
       item.appendChild(target);
       if (zone.role !== null) {
         item.appendChild(el("span", zone.role === "entrance" ? text.entrance : text.exit, "mw-tag"));
       }
-      const remove = button(text.removeZone, () => actions.act("removeZone", zone.id));
+      const remove = button(text.removeZone, () => actions.act("removeZone", zone.id), "mw-small");
       remove.disabled = !state.controls.removeZone;
       item.appendChild(remove);
       zoneList.appendChild(item);
@@ -338,15 +387,18 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
       if (state.marks.includes(flag.zone)) continue;
       const b = button(text.markIntended, () => actions.act("mark", flag.zone));
       b.disabled = !state.controls.mark;
+      b.textContent = `${text.markIntended.en}: ${labelOf(flag.zone)}`;
       b.setAttribute("aria-label", `${text.markIntended.en}: ${labelOf(flag.zone)}`);
       marksBox.appendChild(b);
     }
     for (const id of state.marks) {
       const b = button(text.removeMark, () => actions.unmark(id));
       b.disabled = !state.controls.mark;
+      b.textContent = `${text.removeMark.en}: ${labelOf(id)}`;
       b.setAttribute("aria-label", `${text.removeMark.en}: ${labelOf(id)}`);
       marksBox.appendChild(b);
     }
+    if (marksBox.childElementCount === 0) marksBox.appendChild(el("p", text.marksEmpty, "mw-hint"));
 
     notice.textContent = state.notice?.en ?? "";
     renderCurvePanel(curve, state);
@@ -354,3 +406,5 @@ export function createUi(root: HTMLElement, actions: UiActions): UiSink {
 
   return { render };
 }
+
+

@@ -365,6 +365,27 @@ Conventions for every task:
   - **[Human]** Any Vibe polish (look and feel of the 3D scene or panel) happens only after this approval, only if the human asks, and is time-boxed to half a day (product.md fallback: freeze the look and move on). Failing sensors still block every polish change.
   - _Requirements: 1.1, 1.2, 1.6, 1.7, 3.6, 3.7, 3.8, 3.9, 4.1, 4.2, 4.3, 4.4, 4.5, 4.9, 4.10, 5.1, 5.2, 5.3, 5.4, 5.6, 8.3, 8.4, 8.5, 10.1, 10.2, 10.3, 10.4, 11.2, 11.3, 11.4, 12.1, 12.5, 12.6, 12.7, 12.8, 12.11, 13.4, 13.7, 13.8, 14.3, 14.7, 15.3, 15.4_
 
+- [x] 14. Vibe: usability polish of the Moodwalk page (after the gate, time-boxed to half a day)
+
+  - [x] 14.1 Make the page easy to use (layout and styling only)
+    - Context: the verification gate (task 13) was approved by the human on 2026-11-27, and the human asked for a more usable UI. This is Vibe work (intent.md 10.1, 00-scope.md: time-box, sensors still must pass). The human previews with `npm run build` and `npx vite preview` at `/SpatialCore/moodwalk/` and decides what to push.
+    - Scope, presentation only: `apps/moodwalk/index.html` (CSS scoped under `#app`), DOM structure, class names, and ARIA in `apps/moodwalk/ui.ts`, and UI wording in `apps/moodwalk/text.ts` only if a label is unclear (keep `{ en, ja }` with a non-empty `en`, and keep `text.test.ts` and the `controls.test.ts` hint equality green).
+    - Goals:
+      - Group the right-hand panel into labelled sections with clear headings, spacing, and consistent buttons: Walkthrough, View, Images, Zones, Edit tools, Settings, Marks.
+      - Make "Start walkthrough" the clearly primary control.
+      - Show the notice and status message near the controls and visibly, not hidden below the fold.
+      - Make the Curve_Panel visible without long scrolling (for example under or beside the 3D view) at common desktop sizes.
+      - Use readable font sizes and contrast on a dark theme that matches the 3D scene.
+      - Give buttons visible focus, hover, pressed (`aria-pressed`), and disabled states.
+      - Keep the 3D view aspect ratio at least 1.26 (R-APP2-11, design.md View_Settings) and `#view` filling its area.
+      - Give every input a label with `for` and `id`.
+      - Add short helper text for the three settings.
+      - Add a small legend for the flag colours in the Curve_Panel.
+    - Must not change: judgement, `model/`, `controller.ts` behaviour, `main.ts` wiring, `core/`, any requirement behaviour or the set of operations, the meaning and enabled/disabled rules of `ControlId`. Text is drawn with `textContent` only (no `innerHTML`). All new elements stay inside `#app`. No new dependency, no external font, CSS, or URL (`check:build` allow list), no AI, no storage.
+    - Time-box: half a day. If the 3D view styling takes longer, freeze the look and stop (00-scope.md).
+    - Done when: `npm run lint`, `npm run typecheck`, `npm test`, `npm run build`, and `npm run check:build` exit 0. The existing tests need no semantic change (only selectors or class names if a test reads them). Report which files changed. The agent does not push; the human previews and approves, then one line is added to `docs/decision-log.md`.
+    - _Requirements: 11.2, 11.3, 12.1, 13.7_
+
 ## Notes
 
 - Files touched by more than one task, kept in different waves: `model/arbitraries.ts` (tasks 2.2, 4.2, 5.2, 6.2), `model/arbitraries.test.ts` (2.2, 5.2), `model/mood.test.ts` (2.1, 2.3, 2.4, 2.5), `model/shift-check.test.ts` (5.4, 5.5, 5.6, 5.7, 5.8), `model/layout.test.ts` (5.1, 5.3), `model/walk.test.ts` (5.9, 5.10), `model/commands.test.ts` (6.1, 6.2), `model/board-data.test.ts` (4.4, 6.3, 5.11), `controller.ts` (9.2, 9.3, 9.4), `controller.test.ts` (9.5, 9.6), `ui.ts` (10.1, 10.2), `main.ts` (10.3, 10.4), `text.ts` (9.1, 10.3), `apps/moodwalk/scenarios/school-festival-haunted-house.json` (1.2, 2.6), `docs/decision-log.md` (1.1, 1.2, 11.1, 13).
@@ -405,7 +426,8 @@ Conventions for every task:
     { "id": 21, "tasks": ["10.4"] },
     { "id": 22, "tasks": ["11.1"] },
     { "id": 23, "tasks": ["12"] },
-    { "id": 24, "tasks": ["13"] }
+    { "id": 24, "tasks": ["13"] },
+    { "id": 25, "tasks": ["14.1"] }
   ]
 }
 ```
